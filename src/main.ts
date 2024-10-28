@@ -6,6 +6,7 @@ import {
 import { APOCALYPSE } from "./apocalypse";
 import { ParseError } from "./error";
 import { GNOMEYLAND } from "./gnomeyland";
+import { SPACE } from "./space";
 import { TextMapperParser } from "./parser";
 
 export default class TextMapperPlugin extends Plugin {
@@ -35,15 +36,35 @@ export default class TextMapperPlugin extends Plugin {
 
 export class TextMapper extends MarkdownRenderChild {
     textMapperEl: HTMLDivElement;
-
     constructor(containerEl: HTMLElement, docId: string, source: string) {
         super(containerEl);
         this.textMapperEl = this.containerEl.createDiv({ cls: "textmapper" });
 
-        const totalSource = source
-            .split("\n")
-            .concat(GNOMEYLAND.split("\n"))
-            .concat(APOCALYPSE.split("\n"));
+        // Use the SPACE definitions but filter out font-related lines and glow from others
+        const gnomelandFiltered = GNOMEYLAND.split('\n')
+            .filter(line => !(
+                line.trim().startsWith('default attributes') ||
+                line.trim().startsWith('text ') ||
+                line.trim().startsWith('label ') ||
+                line.trim().startsWith('coordinates ') ||
+                line.trim().startsWith('glow ')
+            ))
+            .join('\n');
+
+        const apocalypseFiltered = APOCALYPSE.split('\n')
+            .filter(line => !(
+                line.trim().startsWith('default attributes') ||
+                line.trim().startsWith('text ') ||
+                line.trim().startsWith('label ') ||
+                line.trim().startsWith('coordinates ') ||
+                line.trim().startsWith('glow ')
+            ))
+            .join('\n');
+
+        const totalSource = source.split('\n')
+            .concat(SPACE.split('\n'))
+            .concat(gnomelandFiltered.split('\n'))
+            .concat(apocalypseFiltered.split('\n'));
 
         const parser = new TextMapperParser(docId);
         parser.process(totalSource);
