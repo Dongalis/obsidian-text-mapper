@@ -15,6 +15,16 @@ The plugin comes with three built-in tilesets:
 
 You can enable/disable these tilesets in the plugin settings.
 
+### Exporting Maps
+
+Each rendered map has a "Download Map" button at the top. Clicking this will export a high-quality PNG file named after your current document. The exported image:
+- Is rendered at 4x resolution for crisp detail
+- Includes all map elements and labels
+- Preserves the exact layout and styling
+- Works well for both small and large maps
+
+The exported PNG can be used in other documents, printed, or shared with others who don't have access to Obsidian or the Text Mapper plugin.
+
 ### External Tilesets
 
 You can now create and use your own custom tilesets:
