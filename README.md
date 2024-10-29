@@ -6,6 +6,209 @@ This plugin renders hex maps in Obsidian. It is a Typescript port of [Text Mappe
 
 The original Text Mapper by Alex Schroeder is licensed under the [GNU Affero General Public License, Version 3](https://www.gnu.org/licenses/agpl-3.0.txt). The Gnomeyland icons by Gregory B. MacKenzie are licensed und the [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/).
 
+## Tilesets
+
+The plugin comes with three built-in tilesets:
+- Gnomeyland: The default tileset with fantasy-themed icons
+- Apocalypse: Post-apocalyptic themed tiles
+- Space: Space-themed tiles with planets and stations
+
+You can enable/disable these tilesets in the plugin settings.
+
+### External Tilesets
+
+You can now create and use your own custom tilesets:
+
+1. Create a folder for your tilesets (e.g., "tilesets") in your vault
+2. Set this folder path in the plugin settings
+3. Add `.ts` files containing tileset definitions
+
+Example of a minimal custom tileset:
+
+```typescript
+// custom-tileset.ts
+export const TEST_TILESET = {
+    name: "test",
+    description: "A custom tileset example",
+    defaultAttributes: "stroke=\"black\" stroke-width=\"1\"",
+    tiles: {
+        blue: {
+            id: "blue",
+            attributes: "fill=\"blue\"",
+            paths: [],
+            svgDefs: []
+        },
+        star: {
+            id: "star",
+            paths: [],
+            svgDefs: [
+                '\n\n'
+            ]
+        }
+    }
+};
+```
+
+Use your custom tileset in maps:
+
+```
+```text-mapper
+use tileset test
+blue star blue
+```
+```
+
+The key lessons are:
+
+Simple hex fills just need:
+
+``` typescript
+
+typescriptCopy{
+    id: "name",
+    attributes: "fill=\"color\"",
+    paths: [],
+    svgDefs: []
+}
+
+```
+
+Custom shapes need:
+
+``` typescript
+
+typescriptCopy{
+    id: "name",
+    paths: [],
+    svgDefs: [
+        '<g id="name">\n<your svg here/>\n</g>'
+    ]
+}
+
+```
+
+
+SVG coordinates should be centered around (0,0) with appropriate scale (around -20 to 20 seems good)
+Keep the empty paths array even when not used.
+
+## Available Tiles
+
+### Gnomeyland Tileset
+Default fantasy-themed tileset with terrain and settlements.
+
+#### Terrain Colors
+- `white`: Paper white
+- `light-soil`, `soil`, `dark-soil`: Agricultural lands
+- `rock`, `dust`, `sand`: Arid/desert terrain
+- `water`, `ocean`: Water bodies
+- `light-grey`, `grey`, `dark-grey`: Wetland variations
+- `blue-green`: Swamp/marsh color
+- `poisoned`: Corrupted terrain
+- `light-green`, `green`, `dark-green`: Forest variations
+
+#### Natural Features
+- `tree`, `trees`, `forest`: Deciduous woodland
+- `bush`, `bushes`, `brushland`: Shrubland
+- `fir`, `firs`, `fir-forest`: Coniferous woodland
+- `hill`: Single hill
+- `mountain`: Single mountain
+- `mountains`: Mountain range
+- `forest-hill`, `forest-mountain`, `forest-mountains`: Forested elevations
+- `fir-hill`, `fir-mountain`, `fir-mountains`: Conifer-covered elevations
+- `fields`: Agricultural pattern
+- `grass`: Grassland
+- `marsh`: Marshland
+- `swamp`, `swamp2`: Swampland
+- `desert`: Desert pattern
+- `lake`: Water body
+
+#### Settlements
+- `thorp`: Smallest settlement
+- `village`: Small settlement with house
+- `town`: Medium settlement
+- `large-town`: Large settlement
+- `city`: Largest settlement
+- `keep`: Defensive structure
+- `tower`: Watchtower
+- `castle`: Fortified settlement
+- `shrine`: Religious site
+- `law`: Lawful settlement
+- `chaos`: Chaotic settlement
+
+#### Path Elements
+- `trail`: Path or track
+- `river`: Water route
+- `canyon`: Deep ravine
+
+### Apocalypse Tileset
+Post-apocalyptic themed terrain and landmarks.
+
+#### Terrain Colors
+- `apoc-sand`, `apoc-coast`, `apoc-sea`: Coastal features
+- `apoc-desert`: Desert terrain
+- `apoc-red`: Danger zone
+- `apoc-debug`: Debug overlay
+
+#### Natural Features
+- `apoc-tundra`: Frozen wasteland
+- `apoc-wetland`: Marsh area
+- `apoc-swamp`: Swampy terrain
+- `apoc-forest`: Dense woodland
+- `apoc-woodland`: Light forest
+- `apoc-hill`: Elevated terrain
+- `apoc-grass`: Grassland
+- `apoc-mountain`: Mountain
+- `apoc-jungle`: Dense vegetation
+- `apoc-volcano`: Active volcano
+
+#### Structures
+- `apoc-fort`: Fortified position
+- `apoc-ruin`: Destroyed structure
+- `apoc-pyramid`: Ancient structure
+- `apoc-cave`: Underground entrance
+- `apoc-fin`: Irradiated zone
+
+#### Path Elements
+- `apoc-road`: Travel route
+- `apoc-river`: Water course
+- `apoc-border`: Territory boundary
+
+### Space Tileset
+Science fiction themed tileset for space maps.
+
+#### Space Backgrounds
+- `void`: Empty space
+- `occupied-space`: Controlled territory
+- `asteroid-space`: Asteroid field region
+- `nebula-space`: Nebula region
+- `plasma-space`: Plasma storm region
+- `zone-space`: Special zone overlay
+
+#### Celestial Bodies
+- `star-yellow`, `star-blue`, `star-red`: Different star types
+- `planet`: Default planet
+- `planet-terran`: Earth-like world
+- `planet-gas`: Gas giant
+- `planet-ice`: Ice world
+- `planet-rock`: Rocky planet
+- `planet-lava`: Volcanic world
+- `deadplanet`: Lifeless world
+
+#### Structures & Hazards
+- `spacestation`: Orbital facility
+- `asteroidfield`: Dense asteroid cluster
+- `hazard`: Danger zone
+- `outpost`: Small station
+- `colony`: Established settlement
+- `starport`: Major space port
+
+Usage example:
+```text-mapper
+use tileset gnomeyland
+mountain forest castle
+river
+```
+
 ### Notes and changes
 
 -   This port does not include support for square grids, verticality, or the `include` command.

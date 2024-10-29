@@ -12,16 +12,86 @@ import { SPACE_TILESET } from './tilesets/space';
 
 // TextMapper class definition
 export class TextMapper extends MarkdownRenderChild {
-  textMapperEl: HTMLDivElement;
-    
-  constructor(containerEl: HTMLElement, docId: string, source: string) {
-    super(containerEl);
-    this.textMapperEl = this.containerEl.createDiv({ cls: "textmapper" });
+    textMapperEl: HTMLDivElement;
+    private plugin: TextMapperPlugin;  // Add plugin property
 
-    const parser = new TextMapperParser(docId);
-    parser.process(source.split('\n'));
-    parser.svg(this.textMapperEl);
-  }
+    constructor(containerEl: HTMLElement, docId: string, source: string, plugin: TextMapperPlugin) {
+        super(containerEl);
+        this.plugin = plugin;  // Store plugin reference
+
+        // Create button container first
+        const buttonContainer = containerEl.createDiv({
+            cls: "textmapper-export-buttons"
+        });
+
+        // Create export button
+        buttonContainer.createEl('button', {
+            text: '📥 Download Map',
+            cls: 'textmapper-download',
+            onclick: async () => {
+                const button = buttonContainer.querySelector('button');
+                if (button) {
+                    const originalText = button.textContent;
+                    button.textContent = '⏳ Exporting...';
+                    button.disabled = true;
+
+                    try {
+                        const svg = this.textMapperEl.querySelector('svg');
+                        if (!svg) return;
+
+                        // Get current file name using stored plugin reference
+                        const activeFile = this.plugin.app.workspace.getActiveFile();
+                        const baseName = activeFile ? activeFile.basename : 'map';
+
+                        const width = svg.clientWidth || parseInt(svg.getAttribute('width') || '800');
+                        const height = svg.clientHeight || parseInt(svg.getAttribute('height') || '600');
+
+                        const canvas = document.createElement('canvas');
+                        const scale = 4;
+                        canvas.width = width * scale;
+                        canvas.height = height * scale;
+                        const ctx = canvas.getContext('2d');
+                        if (!ctx) return;
+
+                        ctx.scale(scale, scale);
+                        const svgData = new XMLSerializer().serializeToString(svg);
+                        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                        const URL = window.URL || window.webkitURL || window;
+                        const svgUrl = URL.createObjectURL(svgBlob);
+
+                        const img = new Image();
+                        img.src = svgUrl;
+                        await new Promise((resolve, reject) => {
+                            img.onload = resolve;
+                            img.onerror = reject;
+                        });
+
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        const pngUrl = canvas.toDataURL('image/png');
+                        const a = document.createElement('a');
+                        a.href = pngUrl;
+                        a.download = `${baseName}.png`;
+                        a.click();
+
+                        URL.revokeObjectURL(svgUrl);
+                    } finally {
+                        if (button) {
+                            button.textContent = originalText;
+                            button.disabled = false;
+                        }
+                    }
+                }
+            }
+        });
+
+        this.textMapperEl = this.containerEl.createDiv({ cls: "textmapper" });
+        const parser = new TextMapperParser(docId);
+        parser.process(source.split('\n'));
+        parser.svg(this.textMapperEl);
+    }
 }
 
 export default class TextMapperPlugin extends Plugin {
@@ -175,30 +245,27 @@ export default class TextMapperPlugin extends Plugin {
     this.app.workspace.trigger('text-mapper:tilesets-changed');
   }
 
-  async processMarkdown(
-    source: string,
-    el: HTMLElement,
-    ctx: MarkdownPostProcessorContext
-  ): Promise<any> {
-    try {
-      const lines = source.split('\n');
-
-      // Convert all registered tile sets to Text Mapper format
-      const tileSetDefinitions = this.tileSetManager.convertToTextMapperFormat();
-
-      // Combine source with tile set definitions
-      const fullSource = [...tileSetDefinitions, ...lines].join('\n');
-
-      // Log for debugging
-      console.log("Processing markdown with", tileSetDefinitions.length, "tileset definitions");
-
-      // Create the TextMapper instance
-      ctx.addChild(new TextMapper(el, ctx.docId, fullSource));
-    } catch (e) {
-      console.error("Text mapper error", e);
-      ctx.addChild(new ParseError(el));
+   async processMarkdown(
+        source: string,
+        el: HTMLElement,
+        ctx: MarkdownPostProcessorContext
+    ): Promise<any> {
+        try {
+            const lines = source.split('\n');
+            // Convert all registered tile sets to Text Mapper format
+            const tileSetDefinitions = this.tileSetManager.convertToTextMapperFormat();
+            // Combine source with tile set definitions
+            const fullSource = [...tileSetDefinitions, ...lines].join('\n');
+            // Log for debugging
+            console.log("Processing markdown with", tileSetDefinitions.length, "tileset definitions");
+            // Create the TextMapper instance - now with plugin reference
+            ctx.addChild(new TextMapper(el, ctx.docId, fullSource, this));
+        } catch (e) {
+            console.error("Text mapper error", e);
+            ctx.addChild(new ParseError(el));
+        }
     }
-  }
+
 
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());

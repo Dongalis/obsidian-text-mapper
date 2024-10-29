@@ -1,0 +1,28 @@
+/* styles.css */
+.textmapper-export-buttons {
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.textmapper-download {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.textmapper-download:hover {
+    background-color: var(--interactive-accent-hover);
+}
+
+.textmapper-download:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
