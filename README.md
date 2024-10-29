@@ -59,21 +59,10 @@ export const TEST_TILESET = {
 };
 ```
 
-Use your custom tileset in maps:
-
-```
-```text-mapper
-use tileset test
-blue star blue
-```
-```
-
-The key lessons are:
-
 Simple hex fills just need:
 
 ``` typescript
-
+ 
 typescriptCopy{
     id: "name",
     attributes: "fill=\"color\"",
