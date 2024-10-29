@@ -1,7 +1,7 @@
 export const SPACE = `
-default attributes fill="none" stroke="black" stroke-width="3"
-text font-size="15pt" dy="15px" fill="white"  # Controls hex numbers
-label font-size="20pt" dy="5px" fill="white"  # Controls place names
+default attributes fill="none" stroke="grey" stroke-width="3"
+text font-size="13pt" dy="15px" fill="white"  # Made hex numbers smaller
+label font-size="14pt" dy="5px" fill="white"  # Made labels smaller
 
 
 # Base background colors for hexes
@@ -10,6 +10,7 @@ occupied-space attributes fill="#1a2635"  # Navy-tinted dark blue for occupied s
 asteroid-space attributes fill="#352317"  # Warmer, more visible brown for asteroid fields
 nebula-space attributes fill="#2a1b38"    # More saturated purple for nebulae
 plasma-space attributes fill="#3d1f1f"    # More visible dark red for plasma storms
+zone-space attributes fill="#4a6d9d" opacity="0.3"  # Semi-transparent blue for zones
 
 # Celestial body colors
 star-yellow attributes fill="#ffd700"
@@ -20,6 +21,7 @@ planet-gas attributes fill="#b39ddb"
 planet-ice attributes fill="#e0ffff"
 planet-rock attributes fill="#8b4513"
 planet-lava attributes fill="#ff4444"
+
 
 # Base Icons
 <g id="Star"><circle cx="0" cy="0" r="35" fill="#ffd700" stroke="#ff8c00" stroke-width="3"/>
@@ -51,6 +53,13 @@ planet-lava attributes fill="#ff4444"
 <path d="M-40,0 C-20,5 20,-5 40,-10" fill="none" stroke="white" stroke-width="2"/>
 <path d="M-40,-10 C-20,-15 20,-25 40,-20" fill="none" stroke="white" stroke-width="2"/></g>
 
+# And for the actual planet color (if you want to create a LavaPlanet variant):
+<g id="LavaPlanet">
+<circle cx="0" cy="0" r="30" fill="#ff4400" stroke="white" stroke-width="3"/>  # Bright orange-red
+<path d="M-40,10 C-20,15 20,5 40,0" fill="none" stroke="#ff8c00" stroke-width="2"/>  # Orange glow
+<path d="M-40,0 C-20,5 20,-5 40,-10" fill="none" stroke="#ff8c00" stroke-width="2"/>
+<path d="M-40,-10 C-20,-15 20,-25 40,-20" fill="none" stroke="#ff8c00" stroke-width="2"/></g>
+
 # Modify GasGiant to use white strokes
 <g id="GasGiant">
 <circle cx="0" cy="0" r="40" fill="#b39ddb" stroke="white" stroke-width="3"/>
@@ -74,7 +83,19 @@ planet-lava attributes fill="#ff4444"
 <path d="M10,20 L20,25 L15,32 L5,28 Z" fill="#b8860b" stroke="#8b4513" stroke-width="2"/>
 </g>
 
+<g id="Hazard">
+<path d="M-100,86.6 L100,-86.6" stroke="red" stroke-width="2" opacity="0.9"/>
+<path d="M-70,86.6 L100,-40" stroke="red" stroke-width="2" opacity="0.9"/>
+<path d="M-40,86.6 L100,6" stroke="red" stroke-width="2" opacity="0.9"/>
+<path d="M-10,86.6 L100,52" stroke="red" stroke-width="2" opacity="0.9"/>
+<path d="M-100,-86.6 L100,86.6" stroke="red" stroke-width="2" opacity="0.9"/>
+<path d="M-100,-40 L70,86.6" stroke="red" stroke-width="2" opacity="0.9"/>
+<path d="M-100,6 L40,86.6" stroke="red" stroke-width="2" opacity="0.9"/>
+<path d="M-100,52 L10,86.6" stroke="red" stroke-width="2" opacity="0.9"/>
+</g>
+
 # Scaled versions for map use
+<g id="lavaplanet"><use xlink:href="#LavaPlanet" transform="scale(0.7)"/></g>
 <g id="deadplanet"><use xlink:href="#DeadPlanet" transform="scale(0.7)"/></g>
 <g id="star"><use xlink:href="#Star" transform="scale(0.7)"/></g>
 <g id="iceplanet"><use xlink:href="#IcePlanet" transform="scale(0.7)"/></g>
@@ -83,6 +104,7 @@ planet-lava attributes fill="#ff4444"
 <g id="gasgiant"><use xlink:href="#GasGiant" transform="scale(0.7)"/></g>
 <g id="spacestation"><use xlink:href="#SpaceStation" transform="scale(0.7)"/></g>
 <g id="asteroidfield"><use xlink:href="#AsteroidField" transform="scale(0.7)"/></g>
+<g id="hazard"><use xlink:href="#Hazard" transform="scale(0.7)"/></g>
 
 # Settlement types
 <g id="outpost">
