@@ -1,13 +1,9 @@
-export const APOCALYPSE = `
-# Apocalypse
+// tilesets/apocalypse.ts
+import { TileSet } from '../types';
+import { convertTextToTileSet } from '../utils/tilesetConverter';
 
-# This file is for use with text-mapper.
-# https://alexschroeder.ch/cgit/text-mapper/about/
 
-# To the extent possible under law, the authors have waived all
-# copyright and related or neighboring rights to this work.
-# https://creativecommons.org/publicdomain/zero/1.0/
-
+const APOCALYPSE_TEXT = `
 default attributes fill="none" stroke="black" stroke-width="3"
 apoc-sand attributes fill="#eedd82"
 apoc-coast attributes fill="#7fffd4"
@@ -44,3 +40,10 @@ apoc-road path attributes stroke="black" stroke-width="3" fill-opacity="0" strok
 apoc-river path attributes stroke="#66cdaa" stroke-width="10" fill-opacity="0" stroke-linecap="round"
 apoc-border path attributes stroke="red" stroke-width="15" stroke-opacity="0.5" fill-opacity="0"
 `;
+
+export const APOCALYPSE_TILESET = convertTextToTileSet(APOCALYPSE_TEXT, {
+    name: "Apocalypse",
+    description: "Apocalypse-themed tileset for terrain, landmarks, and hazards",
+    author: "Original Text Mapper / Obsidian Port",
+    license: "GNU Affero General Public License, Version 3"
+});
