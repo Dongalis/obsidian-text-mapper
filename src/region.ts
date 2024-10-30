@@ -3,94 +3,94 @@ import { Point, Orientation } from "./orientation";
 import { NamespaceFunction } from "./constants";
 
 export class Region {
-    x: number;
-    y: number;
-    types: string[];
-    label: string;
-    size: string;
-    id: string;
-    namespace: NamespaceFunction;
+  x: number;
+  y: number;
+  types: string[];
+  label: string;
+  size: string;
+  id: string;
+  namespace: NamespaceFunction;
 
-    constructor(namespace: NamespaceFunction) {
-        this.types = [];
-        this.namespace = namespace;
+  constructor(namespace: NamespaceFunction) {
+    this.types = [];
+    this.namespace = namespace;
+  }
+
+  pixels(orientation: Orientation, addX: number, addY: number): number[] {
+    const pix = orientation.pixels(new Point(this.x, this.y), addX, addY);
+    return [pix.x, pix.y];
+  }
+
+  svg(svgEl: SVGElement, orientation: Orientation, types: string[]): void {
+    const pix = orientation.pixels(new Point(this.x, this.y));
+    for (const type of this.types) {
+      if (!types.includes(type)) {
+        continue;
+      }
+      const namespaced = this.namespace(type);
+      svgEl.createSvg("use", {
+        attr: {
+          x: pix.x.toFixed(1),
+          y: pix.y.toFixed(1),
+          href: `#${namespaced}`,
+        },
+      });
     }
+  }
 
-    pixels(orientation: Orientation, addX: number, addY: number): number[] {
-        const pix = orientation.pixels(new Point(this.x, this.y), addX, addY);
-        return [pix.x, pix.y];
-    }
+  svgCoordinates(
+    svgEl: SVGElement,
+    orientation: Orientation,
+    textAttributes: any,
+    coordinatesFormat: string
+  ): void {
+    const pix = orientation.pixels(
+      new Point(this.x, this.y),
+      0,
+      -orientation.dy * orientation.labelOffset
+    );
 
-    svg(svgEl: SVGElement, orientation: Orientation, types: string[]): void {
-        const pix = orientation.pixels(new Point(this.x, this.y));
-        for (const type of this.types) {
-            if (!types.includes(type)) {
-                continue;
-            }
-            const namespaced = this.namespace(type);
-            svgEl.createSvg("use", {
-                attr: {
-                    x: pix.x.toFixed(1),
-                    y: pix.y.toFixed(1),
-                    href: `#${namespaced}`,
-                },
-            });
-        }
-    }
+    const coordEl = svgEl.createSvg("text", {
+      attr: {
+        ...textAttributes,
+        "text-anchor": "middle",
+        x: pix.x.toFixed(1),
+        y: pix.y.toFixed(1),
+      },
+    });
 
-    svgCoordinates(
-        svgEl: SVGElement,
-        orientation: Orientation,
-        textAttributes: any,
-        coordinatesFormat: string
-    ): void {
-        const pix = orientation.pixels(
-            new Point(this.x, this.y),
-            0,
-            -orientation.dy * orientation.labelOffset
-        );
+    const xStr = this.x.toString().padStart(2, "0");
+    const yStr = this.y.toString().padStart(2, "0");
 
-        const coordEl = svgEl.createSvg("text", {
-            attr: {
-                ...textAttributes,
-                "text-anchor": "middle",
-                x: pix.x.toFixed(1),
-                y: pix.y.toFixed(1),
-            },
-        });
+    const content = coordinatesFormat
+      .replace("{X}", xStr)
+      .replace("{Y}", yStr);
 
-        const xStr = this.x.toString().padStart(2, "0");
-        const yStr = this.y.toString().padStart(2, "0");
+    coordEl.textContent = content;
+  }
 
-        const content = coordinatesFormat
-            .replace("{X}", xStr)
-            .replace("{Y}", yStr);
+  svgRegion(
+    svgEl: SVGElement,
+    orientation: Orientation,
+    attributes: any
+  ): void {
+    const points = orientation
+      .hexCorners()
+      .map((corner: Point) => {
+        return orientation
+          .pixels(new Point(this.x, this.y), corner.x, corner.y)
+          .toString();
+      })
+      .join(" ");
 
-        coordEl.textContent = content;
-    }
-
-    svgRegion(
-        svgEl: SVGElement,
-        orientation: Orientation,
-        attributes: any
-    ): void {
-        const points = orientation
-            .hexCorners()
-            .map((corner: Point) => {
-                return orientation
-                    .pixels(new Point(this.x, this.y), corner.x, corner.y)
-                    .toString();
-            })
-            .join(" ");
-
-        svgEl.createSvg("polygon", {
-            attr: {
-                ...attributes,
-                id: this.namespace(this.id),
-                points,
-            },
-        });
-    }
+    svgEl.createSvg("polygon", {
+      attr: {
+        ...attributes,
+        id: this.namespace(this.id),
+        points,
+      },
+    });
+  }
 
     svgLabel(
         svgEl: SVGElement,
@@ -98,57 +98,49 @@ export class Region {
         labelAttributes: any,
         glowAttributes: any
     ): void {
-        if (this.label === undefined) {
-            return;
-        }
+        if (!this.label) return;
+
         const attributes = {
             ...labelAttributes,
+            ...(this.size && { "font-size": this.size })
         };
 
-        // Computing the label and link
-        const textContent =
-            this.computeLinkAndLabel(this.label).length > 1
-                ? this.computeLinkAndLabel(this.label)[1]
-                : this.computeLinkAndLabel(this.label)[0];
-        const linkContent = this.computeLinkAndLabel(this.label)[0];
-
-        if (this.size !== undefined) {
-            attributes["font-size"] = this.size;
-        }
+        const [linkText, displayText] = this.computeLinkAndLabel(this.label);
         const pix = orientation.pixels(
             new Point(this.x, this.y),
             0,
             orientation.dy * orientation.labelOffset
         );
+
         const gEl = svgEl.createSvg("g");
 
-        const glowEl = gEl.createSvg("text", {
-            attr: {
-                "text-anchor": "middle",
-                x: pix.x.toFixed(1),
-                y: pix.y.toFixed(1),
-                ...attributes,
-                ...glowAttributes,
-            },
-        });
-        glowEl.textContent = textContent;
+        // Only create glow for non-linked text
+        if (linkText === displayText) {
+            const glowEl = gEl.createSvg("text", {
+                attr: {
+                    "text-anchor": "middle",
+                    x: pix.x.toFixed(1),
+                    y: pix.y.toFixed(1),
+                    ...attributes,
+                    ...glowAttributes,
+                },
+            });
+            glowEl.textContent = displayText;
+        }
 
-        //Only create a link if there is one.
-        if (textContent !== linkContent) {
-            //Add in clickable link for Obsidian
-            const labelLinkEl = gEl.createSvg("a", {
+        if (linkText !== displayText) {
+            // For linked text
+            const linkEl = gEl.createSvg("a", {
                 attr: {
                     "data-tooltip-position": "top",
-                    "aria-label": linkContent,
-                    href: linkContent,
-                    "data-href": linkContent,
+                    "aria-label": linkText,
+                    href: linkText,
+                    "data-href": linkText,
                     class: "internal-link",
-                    target: "_blank",
-                    rel: "noopener",
                 },
             });
 
-            const labelEl = labelLinkEl.createSvg("text", {
+            const textEl = linkEl.createSvg("text", {
                 attr: {
                     "text-anchor": "middle",
                     x: pix.x.toFixed(1),
@@ -156,10 +148,10 @@ export class Region {
                     ...attributes,
                 },
             });
-
-            labelEl.textContent = textContent;
+            textEl.textContent = displayText;
         } else {
-            const labelEl = gEl.createSvg("text", {
+            // For non-linked text
+            const textEl = gEl.createSvg("text", {
                 attr: {
                     "text-anchor": "middle",
                     x: pix.x.toFixed(1),
@@ -167,19 +159,17 @@ export class Region {
                     ...attributes,
                 },
             });
-
-            labelEl.textContent = textContent;
+            textEl.textContent = displayText;
         }
     }
 
     computeLinkAndLabel(label: string): [string, string] {
-        let link = label;
-        let display = label;
-        if (label.includes("|")) {
-            const parts = label.split("|");
-            link = parts[0];
-            display = parts[1];
+        if (!label) return ["", ""];
+        const parts = label.split("|");
+        if (parts.length > 1) {
+            // First part is link, second is display
+            return [parts[0].trim(), parts[1].trim()];
         }
-        return [link, display];
+        return [label.trim(), label.trim()];
     }
 }
