@@ -5,7 +5,9 @@ set -e
 
 # Check if version number is provided
 if [ -z "$1" ]; then
-    echo "Please provide a version number (e.g. 1.2.3)"
+    echo "Usage: $0 <version-number> [minimum-obsidian-version]"
+    echo "Example: $0 1.0.1"
+    echo "Or: $0 1.0.1 1.1.0"
     exit 1
 fi
 
@@ -16,24 +18,44 @@ if ! command -v gh &> /dev/null; then
 fi
 
 VERSION=$1
-RELEASE_NAME="text-mapper-$VERSION"
-RELEASE_ZIP="$RELEASE_NAME.zip"
+
+# Get current minAppVersion from manifest.json if not provided
+if [ -z "$2" ]; then
+    MIN_OBSIDIAN_VERSION=$(grep -o '"minAppVersion": *"[^"]*"' manifest.json | cut -d'"' -f4)
+    echo "Using existing minimum Obsidian version: $MIN_OBSIDIAN_VERSION"
+else
+    MIN_OBSIDIAN_VERSION=$2
+    echo "Setting new minimum Obsidian version: $MIN_OBSIDIAN_VERSION"
+fi
+
 CHANGELOG="CHANGELOG.md"
 
 # Ensure we're on main branch
 git checkout main
 git pull origin main
 
-# Update version number in manifest.json and commit it first
-echo "Updating version in manifest.json to $VERSION..."
-sed -i '' "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" manifest.json
+# 1. Update manifest.json with new version number and minimum Obsidian version
+echo "Updating manifest.json..."
+sed -i '' \
+    -e "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" \
+    -e "s/\"minAppVersion\": \".*\"/\"minAppVersion\": \"$MIN_OBSIDIAN_VERSION\"/" \
+    manifest.json
 
-# Commit and push version change first
-git add manifest.json
-git commit -m "Update version to $VERSION"
+# 2. Update versions.json
+echo "Updating versions.json..."
+if [ ! -f "versions.json" ]; then
+    echo "{}" > versions.json
+fi
+# Create a temporary file with updated versions
+jq --arg ver "$VERSION" --arg min "$MIN_OBSIDIAN_VERSION" '. + {($ver): $min}' versions.json > versions.json.tmp
+mv versions.json.tmp versions.json
+
+# Commit manifest and versions changes first
+git add manifest.json versions.json
+git commit -m "Update versions to $VERSION"
 git push origin main
 
-# Now do the build
+# Build the plugin
 echo "Installing dependencies and building..."
 npm install
 npm run build
@@ -49,36 +71,7 @@ if [ ! -f "styles.css" ]; then
     exit 1
 fi
 
-if [ ! -f "manifest.json" ]; then
-    echo "Error: manifest.json not found"
-    exit 1
-fi
-
-# Create release files directory if it doesn't exist
-mkdir -p releases
-
-# Copy required files to release directory
-echo "Copying release files..."
-cp main.js manifest.json styles.css releases/
-
-# Verify files were copied
-if [ ! -f "releases/main.js" ] || [ ! -f "releases/styles.css" ] || [ ! -f "releases/manifest.json" ]; then
-    echo "Error: Failed to copy some files to releases directory"
-    exit 1
-fi
-
-# Create ZIP file for release
-cd releases
-zip $RELEASE_ZIP main.js manifest.json styles.css
-cd ..
-
-# Verify zip file was created
-if [ ! -f "releases/$RELEASE_ZIP" ]; then
-    echo "Error: Failed to create release zip file"
-    exit 1
-fi
-
-# Gather release notes through prompts
+# Gather release notes
 echo "Enter release notes (press Ctrl+D when done):"
 echo "## Changes in $VERSION" > release_notes.md
 echo "" >> release_notes.md
@@ -86,6 +79,7 @@ echo "### New Features" >> release_notes.md
 cat >> release_notes.md
 echo "" >> release_notes.md
 echo "### Notes" >> release_notes.md
+echo "- Minimum Obsidian version: $MIN_OBSIDIAN_VERSION" >> release_notes.md
 echo "- Please report any issues on the GitHub repository" >> release_notes.md
 
 # Update CHANGELOG.md
@@ -97,24 +91,22 @@ fi
 # Add new release notes at the top of the changelog
 echo "$(cat release_notes.md)" $'\n'"$(cat $CHANGELOG)" > $CHANGELOG
 
-# Commit release files and changelog
-git add releases/$RELEASE_ZIP $CHANGELOG
-git commit -m "Release version $VERSION"
+# Commit changelog
+git add $CHANGELOG
+git commit -m "Update changelog for $VERSION"
+git push origin main
 
-# Create and push tag
-git tag -a $VERSION -m "Release version $VERSION"
-git push origin main --tags
-
-# Create GitHub release using gh cli
+# Create GitHub release
 echo "Creating GitHub release..."
 gh release create "$VERSION" \
-    --title "Text Mapper v$VERSION" \
+    --title "Text Mapper $VERSION" \
     --notes-file release_notes.md \
-    "releases/$RELEASE_ZIP"
+    main.js \
+    manifest.json \
+    styles.css
 
 # Cleanup
 rm release_notes.md
 
 echo "Release $VERSION completed!"
-echo "Release has been created on GitHub with the specified assets."
-echo "Changelog has been updated in $CHANGELOG"
+echo "Don't forget to verify the release on GitHub: https://github.com/modality/obsidian-text-mapper/releases"
