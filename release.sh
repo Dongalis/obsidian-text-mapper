@@ -42,34 +42,15 @@ cd releases
 zip $RELEASE_ZIP main.js manifest.json styles.css
 cd ..
 
-# Generate release notes template
-cat > release_notes.md << EOL
-## Changes in $VERSION
-
-### New Features
--
-
-### Improvements
--
-
-### Bug Fixes
--
-
-### Notes
-- Please report any issues on the GitHub repository
-EOL
-
-# Open release notes in default editor for editing
-if [[ -n $EDITOR ]]; then
-    $EDITOR release_notes.md
-elif [[ -n $(command -v nano) ]]; then
-    nano release_notes.md
-elif [[ -n $(command -v vim) ]]; then
-    vim release_notes.md
-else
-    echo "No suitable editor found. Please edit release_notes.md manually."
-    read -p "Press enter when done editing release notes..."
-fi
+# Gather release notes through prompts
+echo "Enter release notes (press Ctrl+D when done):"
+echo "## Changes in $VERSION" > release_notes.md
+echo "" >> release_notes.md
+echo "### New Features" >> release_notes.md
+cat >> release_notes.md
+echo "" >> release_notes.md
+echo "### Notes" >> release_notes.md
+echo "- Please report any issues on the GitHub repository" >> release_notes.md
 
 # Update CHANGELOG.md
 if [ ! -f $CHANGELOG ]; then
