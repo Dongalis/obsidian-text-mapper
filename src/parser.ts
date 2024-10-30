@@ -1,3 +1,4 @@
+import { App } from "obsidian";
 import {
   ATTRIBUTES_REGEX,
   PATH_ATTRIBUTES_REGEX,
@@ -22,6 +23,7 @@ import { Point, Orientation } from "./orientation";
 import { Region } from "./region";
 import { Spline } from "./spline";
 
+
 // Add new regex for sequence format
 const HEX_SEQUENCE_REGEX = /^(\d\d)(\d\d)-(\d\d)(\d\d)\s+(.*)/;
 
@@ -39,11 +41,13 @@ export class TextMapperParser {
   textAttributes: any;
   glowAttributes: any;
   labelAttributes: any;
+  private app: App;
   orientation: Orientation;
   // messages: string[]; // ' => sub { [] };
 
-  constructor(id: string) {
+  constructor(id: string, app: App) {
     this.id = id;
+    this.app = app;
     this.options = {
       horizontal: false,
       "coordinates-format": "{X}{Y}",
@@ -272,8 +276,8 @@ export class TextMapperParser {
     this.defs.push(svg);
   }
 
-  makeRegion(x: string, y: string, z: string): Region {
-    const region = new Region(this.namespace.bind(this));
+    makeRegion(x: string, y: string, z: string): Region {
+    const region = new Region(this.namespace.bind(this), this.app);
     region.x = parseInt(x);
     region.y = parseInt(y);
     region.id = `hex.${region.x}.${region.y}`;

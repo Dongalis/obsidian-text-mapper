@@ -15,83 +15,83 @@ export class TextMapper extends MarkdownRenderChild {
     textMapperEl: HTMLDivElement;
     private plugin: TextMapperPlugin;  // Add plugin property
 
-    constructor(containerEl: HTMLElement, docId: string, source: string, plugin: TextMapperPlugin) {
-        super(containerEl);
-        this.plugin = plugin;  // Store plugin reference
+  constructor(containerEl: HTMLElement, docId: string, source: string, plugin: TextMapperPlugin) {
+    super(containerEl);
+    this.plugin = plugin;  // Store plugin reference
 
-        // Create button container first
-        const buttonContainer = containerEl.createDiv({
-            cls: "textmapper-export-buttons"
-        });
+    // Create button container first
+    const buttonContainer = containerEl.createDiv({
+      cls: "textmapper-export-buttons"
+    });
 
-        // Create export button
-        buttonContainer.createEl('button', {
-            text: '📥 Download Map',
-            cls: 'textmapper-download',
-            onclick: async () => {
-                const button = buttonContainer.querySelector('button');
-                if (button) {
-                    const originalText = button.textContent;
-                    button.textContent = '⏳ Exporting...';
-                    button.disabled = true;
+    // Create export button
+    buttonContainer.createEl('button', {
+      text: '📥 Download Map',
+      cls: 'textmapper-download',
+      onclick: async () => {
+        const button = buttonContainer.querySelector('button');
+        if (button) {
+          const originalText = button.textContent;
+          button.textContent = '⏳ Exporting...';
+          button.disabled = true;
 
-                    try {
-                        const svg = this.textMapperEl.querySelector('svg');
-                        if (!svg) return;
+          try {
+            const svg = this.textMapperEl.querySelector('svg');
+            if (!svg) return;
 
-                        // Get current file name using stored plugin reference
-                        const activeFile = this.plugin.app.workspace.getActiveFile();
-                        const baseName = activeFile ? activeFile.basename : 'map';
+            // Get current file name using stored plugin reference
+            const activeFile = this.plugin.app.workspace.getActiveFile();
+            const baseName = activeFile ? activeFile.basename : 'map';
 
-                        const width = svg.clientWidth || parseInt(svg.getAttribute('width') || '800');
-                        const height = svg.clientHeight || parseInt(svg.getAttribute('height') || '600');
+            const width = svg.clientWidth || parseInt(svg.getAttribute('width') || '800');
+            const height = svg.clientHeight || parseInt(svg.getAttribute('height') || '600');
 
-                        const canvas = document.createElement('canvas');
-                        const scale = 4;
-                        canvas.width = width * scale;
-                        canvas.height = height * scale;
-                        const ctx = canvas.getContext('2d');
-                        if (!ctx) return;
+            const canvas = document.createElement('canvas');
+            const scale = 4;
+            canvas.width = width * scale;
+            canvas.height = height * scale;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
 
-                        ctx.scale(scale, scale);
-                        const svgData = new XMLSerializer().serializeToString(svg);
-                        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-                        const URL = window.URL || window.webkitURL || window;
-                        const svgUrl = URL.createObjectURL(svgBlob);
+            ctx.scale(scale, scale);
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const URL = window.URL || window.webkitURL || window;
+            const svgUrl = URL.createObjectURL(svgBlob);
 
-                        const img = new Image();
-                        img.src = svgUrl;
-                        await new Promise((resolve, reject) => {
-                            img.onload = resolve;
-                            img.onerror = reject;
-                        });
+            const img = new Image();
+            img.src = svgUrl;
+            await new Promise((resolve, reject) => {
+              img.onload = resolve;
+              img.onerror = reject;
+            });
 
-                        ctx.fillStyle = 'white';
-                        ctx.fillRect(0, 0, canvas.width, canvas.height);
-                        ctx.drawImage(img, 0, 0, width, height);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, width, height);
 
-                        const pngUrl = canvas.toDataURL('image/png');
-                        const a = document.createElement('a');
-                        a.href = pngUrl;
-                        a.download = `${baseName}.png`;
-                        a.click();
+            const pngUrl = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = pngUrl;
+            a.download = `${baseName}.png`;
+            a.click();
 
-                        URL.revokeObjectURL(svgUrl);
-                    } finally {
-                        if (button) {
-                            button.textContent = originalText;
-                            button.disabled = false;
-                        }
-                    }
-                }
+            URL.revokeObjectURL(svgUrl);
+          } finally {
+            if (button) {
+              button.textContent = originalText;
+              button.disabled = false;
             }
-        });
+          }
+        }
+      }
+    });
 
-        this.textMapperEl = this.containerEl.createDiv({ cls: "textmapper" });
-        const parser = new TextMapperParser(docId);
-        parser.process(source.split('\n'));
-        parser.svg(this.textMapperEl);
-    }
+    this.textMapperEl = this.containerEl.createDiv({ cls: "textmapper" });
+    const parser = new TextMapperParser(docId, this.app);
+    parser.process(source.split('\n'));
+    parser.svg(this.textMapperEl);
+  }
 }
 
 export default class TextMapperPlugin extends Plugin {

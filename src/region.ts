@@ -1,3 +1,4 @@
+import { App } from "obsidian";
 import { SVGElement } from "./constants";
 import { Point, Orientation } from "./orientation";
 import { NamespaceFunction } from "./constants";
@@ -10,10 +11,12 @@ export class Region {
   size: string;
   id: string;
   namespace: NamespaceFunction;
+  private app: App;
 
-  constructor(namespace: NamespaceFunction) {
+  constructor(namespace: NamespaceFunction, app: App) {
     this.types = [];
     this.namespace = namespace;
+    this.app = app;
   }
 
   pixels(orientation: Orientation, addX: number, addY: number): number[] {
@@ -92,84 +95,106 @@ export class Region {
     });
   }
 
-    svgLabel(
-        svgEl: SVGElement,
-        orientation: Orientation,
-        labelAttributes: any,
-        glowAttributes: any
-    ): void {
-        if (!this.label) return;
+  svgLabel(
+    svgEl: SVGElement,
+    orientation: Orientation,
+    labelAttributes: any,
+    glowAttributes: any
+  ): void {
+    if (!this.label) return;
 
-        const attributes = {
-            ...labelAttributes,
-            ...(this.size && { "font-size": this.size })
-        };
+    const attributes = {
+      ...labelAttributes,
+      ...(this.size && { "font-size": this.size })
+    };
 
-        const [linkText, displayText] = this.computeLinkAndLabel(this.label);
-        const pix = orientation.pixels(
-            new Point(this.x, this.y),
-            0,
-            orientation.dy * orientation.labelOffset
-        );
+    const [linkText, displayText] = this.computeLinkAndLabel(this.label);
+    const pix = orientation.pixels(
+      new Point(this.x, this.y),
+      0,
+      orientation.dy * orientation.labelOffset
+    );
 
-        const gEl = svgEl.createSvg("g");
+    const gEl = svgEl.createSvg("g");
 
-        // Only create glow for non-linked text
-        if (linkText === displayText) {
-            const glowEl = gEl.createSvg("text", {
-                attr: {
-                    "text-anchor": "middle",
-                    x: pix.x.toFixed(1),
-                    y: pix.y.toFixed(1),
-                    ...attributes,
-                    ...glowAttributes,
-                },
-            });
-            glowEl.textContent = displayText;
+    if (linkText !== displayText) {
+      // For linked text
+      const linkEl = gEl.createSvg("a", {
+        attr: {
+          "data-href": linkText,
+          class: "internal-link",
+          href: linkText
         }
+      });
 
-        if (linkText !== displayText) {
-            // For linked text
-            const linkEl = gEl.createSvg("a", {
-                attr: {
-                    "data-tooltip-position": "top",
-                    "aria-label": linkText,
-                    href: linkText,
-                    "data-href": linkText,
-                    class: "internal-link",
-                },
-            });
+      // Add hover handler
+      if (this.app?.workspace) {
+        // @ts-ignore - SVG element type issues
+        linkEl.addEventListener('mouseover', (event: MouseEvent) => {
+          const targetEl = event.target as HTMLElement;
+          this.app.workspace.trigger('hover-link', {
+            event,
+            source: 'text-mapper',
+            hoverParent: targetEl,
+            targetEl: targetEl,
+            linktext: linkText
+          });
+        });
+      }
 
-            const textEl = linkEl.createSvg("text", {
-                attr: {
-                    "text-anchor": "middle",
-                    x: pix.x.toFixed(1),
-                    y: pix.y.toFixed(1),
-                    ...attributes,
-                },
-            });
-            textEl.textContent = displayText;
-        } else {
-            // For non-linked text
-            const textEl = gEl.createSvg("text", {
-                attr: {
-                    "text-anchor": "middle",
-                    x: pix.x.toFixed(1),
-                    y: pix.y.toFixed(1),
-                    ...attributes,
-                },
-            });
-            textEl.textContent = displayText;
-        }
+      // Add glow behind linked text
+      const glowEl = linkEl.createSvg("text", {
+        attr: {
+          "text-anchor": "middle",
+          x: pix.x.toFixed(1),
+          y: pix.y.toFixed(1),
+          ...attributes,
+          ...glowAttributes,
+        },
+      });
+      glowEl.textContent = displayText;
+
+      // Add visible text
+      const textEl = linkEl.createSvg("text", {
+        attr: {
+          "text-anchor": "middle",
+          x: pix.x.toFixed(1),
+          y: pix.y.toFixed(1),
+          ...attributes,
+        },
+      });
+      textEl.textContent = displayText;
+    } else {
+      // For non-linked text
+      const glowEl = gEl.createSvg("text", {
+        attr: {
+          "text-anchor": "middle",
+          x: pix.x.toFixed(1),
+          y: pix.y.toFixed(1),
+          ...attributes,
+          ...glowAttributes,
+        },
+      });
+      glowEl.textContent = displayText;
+
+      const textEl = gEl.createSvg("text", {
+        attr: {
+          "text-anchor": "middle",
+          x: pix.x.toFixed(1),
+          y: pix.y.toFixed(1),
+          ...attributes,
+        },
+      });
+      textEl.textContent = displayText;
     }
+  }
 
-    computeLinkAndLabel(label: string): [string, string] {
-        if (!label) return ["", ""];
-        const parts = label.split("|");
-        if (parts.length > 1) {
-            // First part is link, second is display
-            return [parts[0].trim(), parts[1].trim()];
-        }
-        return [label.trim(), label.trim()];
+  computeLinkAndLabel(label: string): [string, string] {
+    if (!label) return ["", ""];
+    const parts = label.split("|");
+    if (parts.length > 1) {
+      return [parts[0].trim(), parts[1].trim()];
     }
+    return [label.trim(), label.trim()];
+  }
 }
