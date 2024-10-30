@@ -1,39 +1,80 @@
 # Obsidian Text Mapper
 
-This plugin renders hex maps in Obsidian. It is a Typescript port of [Text Mapper](https://alexschroeder.ch/cgit/text-mapper/about/) originally written in Perl by [Alex Schroeder](https://alexschroeder.ch/wiki/Text_Mapper).
+Create hex maps in Obsidian using simple text descriptions. This plugin is a TypeScript port of [Alex Schroeder's Text Mapper](https://alexschroeder.ch/cgit/text-mapper/about/), enhanced with additional features for Obsidian integration. It is forked from the original [repo](https://github.com/modality/obsidian-text-mapper) with several improvements and additional features.
 
-<img width="698" alt="example" src="https://user-images.githubusercontent.com/179336/234148935-af9a25f5-7891-4923-a467-b68b19c2ccb7.png">
+![Example Map](https://user-images.githubusercontent.com/179336/234148935-af9a25f5-7891-4923-a467-b68b19c2ccb7.png)
 
-The original Text Mapper by Alex Schroeder is licensed under the [GNU Affero General Public License, Version 3](https://www.gnu.org/licenses/agpl-3.0.txt). The Gnomeyland icons by Gregory B. MacKenzie are licensed und the [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/).
+## Getting Started
 
-## Tilesets
+Create a map by inserting a text-mapper code block into an obsidian file:
 
-The plugin comes with three built-in tilesets:
-- Gnomeyland: The default tileset with fantasy-themed icons
-- Apocalypse: Post-apocalyptic themed tiles
-- Space: Space-themed tiles with planets and stations
+```text-mapper
+0101 forest "Forest Grove"
+0102 mountain "High Peak"
+0103 castle "King's Keep"
+0102-0103 trail "Mountain Path"
+```
 
-You can enable/disable these tilesets in the plugin settings.
+## Core Features
 
-### Exporting Maps
+### Basic Syntax
+- `XXYY type "label"`: Place a terrain type at coordinates XX,YY with optional label
+- `XXYY type "link|label"`: Add a clickable link to the label
+- `XXYY-XXZZ type`: Create a sequence of identical hexes (horizontal or vertical)
 
-Each rendered map has a "Download Map" button at the top. Clicking this will export a high-quality PNG file named after your current document. The exported image:
-- Is rendered at 4x resolution for crisp detail
-- Includes all map elements and labels
-- Preserves the exact layout and styling
-- Works well for both small and large maps
+### Map Options
+- `option horizontal`: Switch to pointy-top hexes (default is flat-top)
+- `option coordinates-format {X}.{Y}`: Customize coordinate display format
+- `option swap-even-odd`: Change hex offset pattern
+- `option global`: Use global element IDs
 
-The exported PNG can be used in other documents, printed, or shared with others who don't have access to Obsidian or the Text Mapper plugin.
+### Labels and Paths
+- Add labels with `"text"` after terrain type
+- Create paths between hexes using `trail` or `river`
+- Customize label size by adding a number: `"Big Label" 30`
+- Add Obsidian links with `"PageName|Display Text"`
 
-### External Tilesets
+## Built-in Tilesets
 
-You can now create and use your own custom tilesets:
+The plugin includes three tilesets:
 
-1. Create a folder for your tilesets (e.g., "tilesets") in your vault
-2. Set this folder path in the plugin settings
-3. Add `.ts` files containing tileset definitions
+### Gnomeyland (Fantasy)
+```text-mapper
+0101 forest "Forest"
+0102 castle "Castle"
+0103 mountain "Mountain"
+0101-0103 river
+```
 
-Example of a minimal custom tileset:
+### Apocalypse
+```text-mapper
+0101 apoc-ruin "Ruins"
+0102 apoc-fort "Fortress"
+0103 apoc-volcano "Volcano"
+```
+
+### Space
+```text-mapper
+0101 planet "Earth"
+0102 spacestation "Alpha Base"
+0103 asteroidfield "Danger Zone"
+```
+
+You may enable/disable tilesets in the plugin settings. You may use more than one tileset at a time, though be on the lookout for conflicts between them!
+
+## Exporting Maps
+
+Click "Download Map" above any rendered map to export as a high-quality PNG file.
+
+## Custom Tilesets
+
+Create custom tilesets in your vault:
+
+1. Create a tilesets folder
+2. Configure folder path in plugin settings
+3. Add tileset definition files:
+
+Example of a minimal custom tileset in a `custom.ts` file:
 
 ```typescript
 // custom-tileset.ts
@@ -86,8 +127,8 @@ typescriptCopy{
 
 ```
 
-
 SVG coordinates should be centered around (0,0) with appropriate scale (around -20 to 20 seems good)
+
 Keep the empty paths array even when not used.
 
 ## Available Tiles
