@@ -1,3 +1,10 @@
+## Changes in 1.3.8
+
+### New Features
+Fix text linking
+### Notes
+- Minimum Obsidian version: 0.12.0
+- Please report any issues on the GitHub repository 
 ## Changes in 1.3.7
 
 ### New Features
