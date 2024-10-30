@@ -1,3 +1,9 @@
+## Changes in 1.3.6
+
+### New Features
+Fix release versioning
+### Notes
+- Please report any issues on the GitHub repository 
 ## Changes in 1.3.5
 
 ### New Features
