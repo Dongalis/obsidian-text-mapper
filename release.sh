@@ -24,11 +24,16 @@ CHANGELOG="CHANGELOG.md"
 git checkout main
 git pull origin main
 
-# Update version number in manifest.json BEFORE building
+# Update version number in manifest.json and commit it first
 echo "Updating version in manifest.json to $VERSION..."
 sed -i '' "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" manifest.json
 
-# Install dependencies and build
+# Commit and push version change first
+git add manifest.json
+git commit -m "Update version to $VERSION"
+git push origin main
+
+# Now do the build
 echo "Installing dependencies and building..."
 npm install
 npm run build
@@ -92,8 +97,8 @@ fi
 # Add new release notes at the top of the changelog
 echo "$(cat release_notes.md)" $'\n'"$(cat $CHANGELOG)" > $CHANGELOG
 
-# Commit all changes (manifest.json change is included here)
-git add manifest.json releases/$RELEASE_ZIP $CHANGELOG
+# Commit release files and changelog
+git add releases/$RELEASE_ZIP $CHANGELOG
 git commit -m "Release version $VERSION"
 
 # Create and push tag
