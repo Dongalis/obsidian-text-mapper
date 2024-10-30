@@ -210,6 +210,10 @@ river
 
 ### Notes and changes
 
+-   Added support for hex sequences to create consecutive hexes with the same terrain. This allows for more concise map definitions:
+    -   Horizontal sequences: `1020-1023 void` creates four void hexes at 1020, 1021, 1022, and 1023
+    -   Vertical sequences: `1020-1040 void` creates three void hexes at 1020, 1030, and 1040 
+    -   The format is `XXYY-XXYY type` where XX is the x-coordinate and YY is the y-coordinate
 -   This port does not include support for square grids, verticality, or the `include` command.
 -   I have included the Gnomeyland Map Icons created by Gregory B. MacKenzie by default. No other icon set is supported.
 -   Added support for "pointy top" hexes. To switch between modes, simply add `option horizontal` to your block.
