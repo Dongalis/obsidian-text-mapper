@@ -1,3 +1,9 @@
+## Changes in 1.3.4
+
+### New Features
+Revise (test) release again
+### Notes
+- Please report any issues on the GitHub repository 
 ## Changes in 1.3.3
 
 ### New Features
