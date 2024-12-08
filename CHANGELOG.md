@@ -1,3 +1,11 @@
+## Changes in 1.3.9
+
+### New Features
+Fix map and trails
+
+### Notes
+- Minimum Obsidian version: 0.12.0
+- Please report any issues on the GitHub repository 
 ## Changes in 1.3.8
 
 ### New Features
