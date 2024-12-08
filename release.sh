@@ -109,4 +109,4 @@ gh release create "$VERSION" \
 rm release_notes.md
 
 echo "Release $VERSION completed!"
-echo "Don't forget to verify the release on GitHub: https://github.com/modality/obsidian-text-mapper/releases"
+echo "Don't forget to verify the release on GitHub: https://github.com/LichFactory-Games/obsidian-text-mapper/releases"

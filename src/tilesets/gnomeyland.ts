@@ -31,6 +31,7 @@ sand attributes fill="#e3bea3"
 water attributes fill="#6ebae7"
 ocean attributes fill="#1c86ee"
 
+
 # wetlands
 light-grey attributes fill="#dcddbe"
 grey attributes fill="#afbc9e"
@@ -132,7 +133,8 @@ red attributes fill="red" opacity="0.8" transform="scale(0.5)"
 <path id="cliffs3" transform="rotate(270)" d="M-94,70 V-70" stroke-dasharray="5 17" stroke="black" stroke-width="12px" fill="none"/>
 
 # lakes
-<ellipse id="lake" fill="#6ebae7" stroke="black" stroke-width="3" cx="0" cy="0" rx="45" ry="30"/>
+<g id="lake_base"><ellipse fill="#6ebae7" stroke="black" stroke-width="3" cx="0" cy="0" rx="45" ry="30"/></g>
+<g id="lake"><use xlink:href="#lake_base" transform="scale(0.7)"/></g>
 `;
 
 export const GNOMEYLAND_TILESET = convertTextToTileSet(GNOMEYLAND_TEXT, {
