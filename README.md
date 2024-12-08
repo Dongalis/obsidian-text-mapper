@@ -27,10 +27,13 @@ Create a map by inserting a text-mapper code block into an obsidian file:
 - `option coordinates-format {X}.{Y}`: Customize coordinate display format
 - `option swap-even-odd`: Change hex offset pattern
 - `option global`: Use global element IDs
+- `option vCurve`: Set global vertical path curvature (positive real number)
+- `option hCurve`: Set global horizontal path curvature (positive real number)
 
 ### Labels and Paths
 - Add labels with `"text"` after terrain type
 - Create paths between hexes using `trail` or `river`
+- Customize path curvature with `curve=0.5` (or any positive real number)
 - Customize label size by adding a number: `"Big Label" 30`
 - Add Obsidian links with `"PageName|Display Text"`
 
