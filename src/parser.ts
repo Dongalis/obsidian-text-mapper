@@ -237,6 +237,14 @@ export class TextMapperParser {
     spline.side = match[4];
     spline.start = match[5];
 
+     // Add curve handling
+    if (match[6]) {
+        const curveMatch = match[6].match(/curve=([\d.]+)/);
+        if (curveMatch) {
+            spline.pathCurvature = parseFloat(curveMatch[1]);
+        }
+    }
+
     let rest = line;
     while (true) {
       let segment: string;
@@ -285,7 +293,8 @@ export class TextMapperParser {
   }
 
   makeSpline(): Spline {
-    const spline = new Spline();
+    const spline = new Spline(this.options);
+    spline.curvatureAmount = this.options.pathCurvature || 0.1;
     this.pathId++;
     spline.id = this.namespace(`path-${this.pathId}`);
     return spline;
@@ -333,6 +342,13 @@ export class TextMapperParser {
     } else if (option.key === "global") {
       option.valid = true;
       option.value = true;
+    }
+
+
+    // Add path curvature handling
+    if (option.key === "vCurve" || option.key === "hCurve") {
+        option.valid = true;
+        option.value = parseFloat(tokens[1]);
     }
 
     // If the option is valid, then set it in this.options. It can now be
