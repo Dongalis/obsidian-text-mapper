@@ -25,7 +25,7 @@ import { Spline } from "./spline";
 
 
 // Add new regex for sequence format
-const HEX_SEQUENCE_REGEX = /^(\d\d)(\d\d)-(\d\d)(\d\d)\s+(.*)/;
+const HEX_SEQUENCE_REGEX = /^(\d\d)(\d\d)-(\d\d)(\d\d)\s+(?!\b(?:trail|river)\b)(.*)/;
 
 // https://alexschroeder.ch/cgit/text-mapper/tree/lib/Game/TextMapper/Mapper.pm
 export class TextMapperParser {
