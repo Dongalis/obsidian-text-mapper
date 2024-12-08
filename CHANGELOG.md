@@ -1,3 +1,10 @@
+## Changes in 1.3.10
+
+### New Features
+Fix lka rendering
+### Notes
+- Minimum Obsidian version: 0.12.0
+- Please report any issues on the GitHub repository 
 ## Changes in 1.3.9
 
 ### New Features
