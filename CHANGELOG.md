@@ -1,3 +1,10 @@
+## Changes in 1.4.0
+
+### New Features
+Add better path control
+### Notes
+- Minimum Obsidian version: 0.12.0
+- Please report any issues on the GitHub repository 
 ## Changes in 1.3.10
 
 ### New Features
