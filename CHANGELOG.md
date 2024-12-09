@@ -1,3 +1,10 @@
+## Changes in 1.4.1
+
+### New Features
+Refactor path contouring
+### Notes
+- Minimum Obsidian version: 0.12.0
+- Please report any issues on the GitHub repository 
 ## Changes in 1.4.0
 
 ### New Features
