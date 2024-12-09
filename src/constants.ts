@@ -1,5 +1,6 @@
 export const ATTRIBUTES_REGEX = /^(\S+)\s+attributes\s+(.*)/;
 export const PATH_ATTRIBUTES_REGEX = /^(\S+)\s+path\s+attributes\s+(.*)/;
+export const PATH_OPTIONS_REGEX = /(?:frequency|depth|rate)=[\d.]+/g;
 export const PATH_REGEX = /^(\S+)\s+path\s+(.*)/;
 export const XML_REGEX = /^(<.*>)/;
 export const TEXT_REGEX = /^text\s+(.*)/;

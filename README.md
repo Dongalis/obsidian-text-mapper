@@ -27,13 +27,15 @@ Create a map by inserting a text-mapper code block into an obsidian file:
 - `option coordinates-format {X}.{Y}`: Customize coordinate display format
 - `option swap-even-odd`: Change hex offset pattern
 - `option global`: Use global element IDs
-- `option vCurve`: Set global vertical path curvature (positive real number)
-- `option hCurve`: Set global horizontal path curvature (positive real number)
 
 ### Labels and Paths
 - Add labels with `"text"` after terrain type
 - Create paths between hexes using `trail` or `river`
-- Customize path curvature with `curve=0.5` (or any positive real number)
+- Customize path contour (a sinusoidal wave) with:
+  - `frequency=N`: Number of wave cycles (default: 1)
+  - `depth=N`: Wave amplitude (default: 0.1)
+  - `rate=N`: Wave smoothness (default: 0.1)
+- Example path: `0102-0304 trail frequency=2 depth=0.3 rate=0.4 "Mountain Path"`
 - Customize label size by adding a number: `"Big Label" 30`
 - Add Obsidian links with `"PageName|Display Text"`
 

@@ -3,6 +3,7 @@ import {
   ATTRIBUTES_REGEX,
   PATH_ATTRIBUTES_REGEX,
   OPTION_REGEX,
+  PATH_OPTIONS_REGEX,
   PATH_REGEX,
   XML_REGEX,
   TEXT_REGEX,
@@ -53,6 +54,9 @@ export class TextMapperParser {
       "coordinates-format": "{X}{Y}",
       "swap-even-odd": false,
       global: false,
+      pathFrequency: 1,
+      pathDepth: 0.1,
+      pathRate: 0.1
     };
     this.regions = [];
     this.attributes = {};
@@ -229,7 +233,6 @@ export class TextMapperParser {
   }
 
   parsePath(line: string) {
-    // path
     const match = line.match(SPLINE_REGEX);
     const spline = this.makeSpline();
     spline.types = match[2];
@@ -237,13 +240,16 @@ export class TextMapperParser {
     spline.side = match[4];
     spline.start = match[5];
 
-     // Add curve handling
-    if (match[6]) {
-        const curveMatch = match[6].match(/curve=([\d.]+)/);
-        if (curveMatch) {
-            spline.pathCurvature = parseFloat(curveMatch[1]);
-        }
+    
+    // Parse curve options
+    const pathOptions = {};
+    const optionsMatch = line.matchAll(PATH_OPTIONS_REGEX);
+    for (const match of optionsMatch) {
+      const [_, key, value] = match;
+      pathOptions[key] = parseFloat(value);
     }
+    spline.pathOptions = pathOptions;
+    console.log("Spline path options:", spline.pathOptions);
 
     let rest = line;
     while (true) {
@@ -256,7 +262,7 @@ export class TextMapperParser {
       spline.addPoint(pointMatch[1], pointMatch[2]);
     }
     return spline;
-  }
+}
 
   private splitPathSegments(splinePath: string): [string, string] {
     let match = splinePath.match(SPLINE_ELEMENT_SPLIT_REGEX);
@@ -344,11 +350,10 @@ export class TextMapperParser {
       option.value = true;
     }
 
-
-    // Add path curvature handling
-    if (option.key === "vCurve" || option.key === "hCurve") {
-        option.valid = true;
-        option.value = parseFloat(tokens[1]);
+    // Add handling for global path options:
+    if (option.key === "pathFrequency" || option.key === "pathDepth" || option.key === "pathRate") {
+      option.valid = true;
+      option.value = parseFloat(tokens[1]);
     }
 
     // If the option is valid, then set it in this.options. It can now be

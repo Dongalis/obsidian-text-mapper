@@ -9,8 +9,6 @@ export class Spline {
   id: string;
   points: Point[];
   orientation: Orientation;
-  curvatureAmount: number = 0.1; // Default curvature amount
-  pathCurvature?: number;
   options: any
 
 
@@ -18,6 +16,61 @@ export class Spline {
     this.points = [];
     this.options = options; // Store options
 
+  }
+
+  private generateContinuousCurvedPath(points: Point[]): string {
+    if (points.length < 2) return "";
+
+    const {
+        frequency = this.options.pathFrequency || 1,
+        depth = this.options.pathDepth || 0.2,
+        rate = this.options.pathRate || 0.25
+    } = this.pathOptions || {};
+
+    // Start path at first point
+    let path = `M ${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`;
+
+    // Generate one continuous curve through all points
+    const curvePoints: Point[] = [];
+
+    for (let i = 0; i < points.length - 1; i++) {
+        const start = points[i];
+        const end = points[i + 1];
+        const dx = end.x - start.x;
+        const dy = end.y - start.y;
+        const length = Math.sqrt(dx * dx + dy * dy);
+
+        // Generate intermediate points for this segment
+        const steps = Math.max(2, Math.floor(frequency * 10));
+        for (let j = 0; j <= steps; j++) {
+            const t = j / steps;
+            const x = start.x + dx * t;
+            const y = start.y + dy * t;
+
+            // Apply sinusoidal curve
+            const wave = Math.sin(t * Math.PI * 2 * frequency) * depth;
+            const perpX = -dy / length * wave * this.orientation.dx;
+            const perpY = dx / length * wave * this.orientation.dy;
+
+            curvePoints.push(new Point(x + perpX, y + perpY));
+        }
+    }
+
+    // Generate smooth curve through all points
+    for (let i = 1; i < curvePoints.length; i++) {
+        const prev = curvePoints[i - 1];
+        const curr = curvePoints[i];
+
+        if (i === 1) {
+            // First curve segment
+            path += ` C ${prev.x.toFixed(1)},${prev.y.toFixed(1)} ${curr.x.toFixed(1)},${curr.y.toFixed(1)} ${curr.x.toFixed(1)},${curr.y.toFixed(1)}`;
+        } else {
+            // Subsequent segments using relative coordinates
+            path += ` S ${curr.x.toFixed(1)},${curr.y.toFixed(1)} ${curr.x.toFixed(1)},${curr.y.toFixed(1)}`;
+        }
+    }
+
+    return path;
   }
 
 
@@ -163,94 +216,22 @@ export class Spline {
     const points = this.computeMissingPoints();
     if (points.length == 0) return;
 
-    let path = "";
-    let current, next;
+    // Convert all points to pixel coordinates at once
+    const pixelPoints = points.map(p => this.orientation.pixels(p));
 
-
-    for (let i = 0; i < points.length - 1; i++) {
-      current = points[i];
-      next = points[i + 1];
-
-
-      // Modify scaling based on direction
-      const isVertical = Math.abs(next.y - current.y) > Math.abs(next.x - current.x);
-      const curveValue = this.pathCurvature ||
-        (isVertical ? this.options.vCurve : this.options.hCurve) ||
-        this.curvatureAmount;
-
-      const scaledCurvature = isVertical ?
-        curveValue * 0.2 * 1.75 :
-        curveValue * 0.175 * 0.2 ;
-
-
-      if (path.length === 0) {
-        // For very small curvature values, make the path nearly straight
-        if (scaledCurvature < 0.01) {
-          const start = this.orientation.pixels(current);
-          const end = this.orientation.pixels(next);
-          path += `M${start.toString()} L${end.toString()}`;
-        } else {
-          const perpX = -(next.y - current.y) * scaledCurvature;
-          const perpY = (next.x - current.x) * scaledCurvature;
-
-          const controlPoint = new Point(
-            (current.x + next.x)/2 + perpX,
-            (current.y + next.y)/2 + perpY
-          );
-
-          const start = this.orientation.pixels(current);
-          const control = this.orientation.pixels(controlPoint);
-          const end = this.orientation.pixels(next);
-
-          path += `M${start.toString()} Q${control.toString()} ${end.toString()}`;
-        }
-      } else {
-        if (scaledCurvature < 0.01) {
-          const end = this.orientation.pixels(next);
-          path += ` L${end.toString()}`;
-        } else {
-          const perpX = -(next.y - current.y) * scaledCurvature;
-          const perpY = (next.x - current.x) * scaledCurvature;
-
-          const controlPoint = new Point(
-            (current.x + next.x)/2 + perpX,
-            (current.y + next.y)/2 + perpY
-          );
-
-          const control = this.orientation.pixels(controlPoint);
-          const end = this.orientation.pixels(next);
-
-          path += ` T${end.toString()}`;
-        }
-      }
-    }
+    // Generate one continuous path
+    const path = this.generateContinuousCurvedPath(pixelPoints);
 
     svgEl.createSvg("path", {
-      attr: {
-        id: this.id,
-        type: this.types,
-        ...pathAttributes[this.types],
-        d: path,
-      },
+        attr: {
+            id: this.id,
+            type: this.types,
+            ...pathAttributes[this.types],
+            d: path,
+        },
     });
-  }
-
-  // Add helper method to create path offsets
-  private addPathOffset(pathString: string, amount: number): string {
-    // Parse the path string and add perpendicular offsets to control points
-    // This is a simplified example - you'd need to properly parse the path string
-    const parts = pathString.split(' ');
-    const newParts = parts.map(part => {
-      if (part.includes(',')) {
-        const [x, y] = part.split(',').map(Number);
-        return `${x + (Math.random() - 0.5) * amount},${y}`;
-      }
-      return part;
-    });
-    return newParts.join(' ');
-  }
-
-
+}
+ 
   svgLabel(
     svgEl: SVGElement,
     labelAttributes: any,
