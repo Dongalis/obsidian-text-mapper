@@ -12,11 +12,13 @@ export class Region {
   id: string;
   namespace: NamespaceFunction;
   private app: App;
+  private options: any;
 
-  constructor(namespace: NamespaceFunction, app: App) {
+  constructor(namespace: NamespaceFunction, app: App, options: any) {
     this.types = [];
     this.namespace = namespace;
     this.app = app;
+    this.options = options;
   }
 
   pixels(orientation: Orientation, addX: number, addY: number): number[] {
@@ -118,14 +120,16 @@ export class Region {
     const gEl = svgEl.createSvg("g");
 
     if (linkText !== displayText) {
-      // For linked text
-      const linkEl = gEl.createSvg("a", {
-        attr: {
-          "data-href": linkText,
-          class: "internal-link",
-          href: linkText
-        }
-      });
+          // For linked text
+      const linkAttributes: any = {
+        "data-href": linkText,
+        class: `internal-link${this.options["no-underline"] ? "" : " underlined"}`,
+        href: linkText
+      };
+
+    const linkEl = gEl.createSvg("a", {
+        attr: linkAttributes
+    });
 
       // Add hover handler
       if (this.app?.workspace) {

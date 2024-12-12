@@ -291,7 +291,7 @@ export class TextMapperParser {
   }
 
     makeRegion(x: string, y: string, z: string): Region {
-    const region = new Region(this.namespace.bind(this), this.app);
+      const region = new Region(this.namespace.bind(this), this.app, this.options);
     region.x = parseInt(x);
     region.y = parseInt(y);
     region.id = `hex.${region.x}.${region.y}`;
@@ -354,6 +354,12 @@ export class TextMapperParser {
     if (option.key === "pathFrequency" || option.key === "pathDepth" || option.key === "pathRate") {
       option.valid = true;
       option.value = parseFloat(tokens[1]);
+    }
+
+    // Add option to remove underline from links
+    if (option.key === "no-underline") {
+        option.valid = true;
+        option.value = true;
     }
 
     // If the option is valid, then set it in this.options. It can now be

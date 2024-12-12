@@ -26,3 +26,11 @@
     opacity: 0.7;
     cursor: not-allowed;
 }
+
+.textmapper svg a.internal-link {
+    text-decoration: none !important;
+}
+
+.textmapper svg a.internal-link.underlined {
+    text-decoration: underline !important;
+}
