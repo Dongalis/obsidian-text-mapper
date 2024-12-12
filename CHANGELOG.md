@@ -1,3 +1,10 @@
+## Changes in 1.4.2
+
+### New Features
+Add option for removing underlineing from hex links
+### Notes
+- Minimum Obsidian version: 0.12.0
+- Please report any issues on the GitHub repository 
 ## Changes in 1.4.1
 
 ### New Features
