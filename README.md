@@ -27,6 +27,7 @@ Create a map by inserting a text-mapper code block into an obsidian file:
 - `option coordinates-format {X}.{Y}`: Customize coordinate display format
 - `option swap-even-odd`: Change hex offset pattern
 - `option global`: Use global element IDs
+- `option no-underline`: Remove underline from links in hexes
 
 ### Labels and Paths
 - Add labels with `"text"` after terrain type
