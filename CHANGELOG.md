@@ -1,3 +1,11 @@
+## Changes in 1.4.3
+
+### New Features
+Minor big fixes
+
+### Notes
+- Minimum Obsidian version: 0.12.0
+- Please report any issues on the GitHub repository 
 ## Changes in 1.4.2
 
 ### New Features
