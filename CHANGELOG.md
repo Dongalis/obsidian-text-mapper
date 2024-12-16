@@ -1,3 +1,10 @@
+## Changes in 1.4.4
+
+### New Features
+Add hexflower and map scheme
+### Notes
+- Minimum Obsidian version: 0.12.0
+- Please report any issues on the GitHub repository 
 ## Changes in 1.4.3
 
 ### New Features
