@@ -28,6 +28,8 @@ Create a map by inserting a text-mapper code block into an obsidian file:
 - `option swap-even-odd`: Change hex offset pattern
 - `option global`: Use global element IDs
 - `option no-underline`: Remove underline from links in hexes
+- `option hexflower A center:1010`: map tile numbers to a letter format in a hexflower spiral centered on a specific tile 
+- `option map AG=1008`: map a specific hexnumber to a different name 
 
 ### Labels and Paths
 - Add labels with `"text"` after terrain type
