@@ -19,6 +19,18 @@ export interface TileSet {
     tiles: Record<string, TileDefinition>;
 }
 
+// Support hexflower alternate numbering
+export interface HexMapping {
+    displayValue: string;  // What to show (e.g., "A1", "AG")
+    coordinate: string;    // The actual hex coordinate (e.g., "1001")
+}
+
+export interface HexFlower {
+    letter: string;       // Region letter (e.g., "A")
+    center: string;       // Center coordinate (e.g., "1001")
+    mappings: HexMapping[];
+}
+
 // Example of how a tile set would be defined
 export const EXAMPLE_TILESET: TileSet = {
     name: "Example Fantasy",

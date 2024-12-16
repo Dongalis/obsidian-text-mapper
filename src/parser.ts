@@ -23,6 +23,8 @@ import {
 import { Point, Orientation } from "./orientation";
 import { Region } from "./region";
 import { Spline } from "./spline";
+import { HexFlowerCalculator } from './HexFlowerCalculator';
+
 
 
 // Add new regex for sequence format
@@ -87,6 +89,7 @@ export class TextMapperParser {
    * Process the source code of a map, line by line.
    */
   process(lines: string[]) {
+    Region.initialize();
     this.pathId = 0;
 
     // First, set all options.
@@ -339,6 +342,22 @@ export class TextMapperParser {
     option.key = tokens[0];
 
     // Validate the option
+    if (option.key === "hexflower") {
+        option.valid = true;
+        const letter = tokens[1];
+        const center = tokens[2].split(":")[1];
+        Region.addHexFlower(letter, center);
+    }
+    else if (option.key === "map") {
+        option.valid = true;
+        const mappingString = tokens.slice(1).join(" ");
+        const mappings = mappingString.split(",");
+        for (const mapping of mappings) {
+            const [display, coord] = mapping.trim().split("=");
+            Region.addMapping(display.trim(), coord.trim());
+        }
+    }
+
     if (option.key === "horizontal" || option.key === "swap-even-odd") {
       option.valid = true;
       option.value = true;

@@ -2,6 +2,8 @@ import { App } from "obsidian";
 import { SVGElement } from "./constants";
 import { Point, Orientation } from "./orientation";
 import { NamespaceFunction } from "./constants";
+import { HexFlowerCalculator } from './HexFlowerCalculator';
+
 
 export class Region {
   x: number;
@@ -21,6 +23,28 @@ export class Region {
     this.options = options;
   }
 
+  static initialize() {
+    this.hexMappings.clear();
+  }
+
+  private static hexMappings: Map<string, string> = new Map();
+
+  static clearMappings() {
+    this.hexMappings.clear();
+  }
+
+  static addHexFlower(letter: string, centerCoord: string) {
+    const mappings = HexFlowerCalculator.calculateHexFlower(letter, centerCoord);
+    for (const mapping of mappings) {
+      this.hexMappings.set(mapping.coordinate, mapping.displayValue);
+    }
+  }
+
+  static addMapping(display: string, coordinate: string) {
+    this.hexMappings.set(coordinate, display);
+  }
+
+  
   pixels(orientation: Orientation, addX: number, addY: number): number[] {
     const pix = orientation.pixels(new Point(this.x, this.y), addX, addY);
     return [pix.x, pix.y];
@@ -64,14 +88,14 @@ export class Region {
       },
     });
 
-    const xStr = this.x.toString().padStart(2, "0");
-    const yStr = this.y.toString().padStart(2, "0");
+    // Get coordinate string in standard format (e.g., "1001")
+    const coordStr = `${String(this.x).padStart(2, '0')}${String(this.y).padStart(2, '0')}`;
 
-    const content = coordinatesFormat
-      .replace("{X}", xStr)
-      .replace("{Y}", yStr);
+    // Check if we have a mapping for this coordinate
+    const displayValue = Region.hexMappings.get(coordStr) || coordStr;
 
-    coordEl.textContent = content;
+    coordEl.textContent = displayValue;
+
   }
 
   svgRegion(
@@ -120,16 +144,16 @@ export class Region {
     const gEl = svgEl.createSvg("g");
 
     if (linkText !== displayText) {
-          // For linked text
+      // For linked text
       const linkAttributes: any = {
         "data-href": linkText,
         class: `internal-link${this.options["no-underline"] ? "" : " underlined"}`,
         href: linkText
       };
 
-    const linkEl = gEl.createSvg("a", {
+      const linkEl = gEl.createSvg("a", {
         attr: linkAttributes
-    });
+      });
 
       // Add hover handler
       if (this.app?.workspace) {

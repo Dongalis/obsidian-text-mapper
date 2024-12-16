@@ -6,6 +6,8 @@ import { TextMapperSettings, DEFAULT_SETTINGS } from './settings';
 import { TextMapperSettingTab } from './settingsTab';
 import { TileSetManager } from './tileSetManager';
 import { TilesetLoader} from './tilesetLoader';
+import { HexFlowerCalculator } from './HexFlowerCalculator';
+
 import { GNOMEYLAND_TILESET } from './tilesets/gnomeyland';
 import { APOCALYPSE_TILESET } from './tilesets/apocalypse';
 import { SPACE_TILESET } from './tilesets/space';
