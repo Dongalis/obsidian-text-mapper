@@ -1,52 +1,78 @@
 import { HexMapping } from './types';
 
+export enum FlowerDirection {
+  North = 1,
+  Northeast = 2,
+  Southeast = 3,
+  South = 4,
+  Southwest = 5,
+  Northwest = 6
+}
+
 export class HexFlowerCalculator {
-    static getRelativePositions(): {[key: string]: [number, number]} {
-        return {
-            // Center
-            "1": [0, 0],     //  (center)
+ static basePositions = {
+   "1": [0, 0],
+   "2": [0, -1],
+   "3": [+1, 0],
+   "4": [+1, +1],
+   "5": [0, +1],
+   "6": [-1, +1],
+   "7": [-1, 0],
+   "8": [-1, -1],
+   "9": [0, -2],
+   "10": [+1, -1],
+   "11": [+2, -1],
+   "12": [+2, 0],
+   "13": [+2, +1],
+   "14": [+1, +2],
+   "15": [0, +2],
+   "16": [-1, +2],
+   "17": [-2, +1],
+   "18": [-2, 0],
+   "19": [-2, -1]
+ };
 
-            // First ring (clockwise from north)
-            "2": [0, -1],    //  (north)
-            "3": [+1, 0],    //  (northeast)
-            "4": [+1, +1],   //  (southeast)
-            "5": [0, +1],    //  (south)
-            "6": [-1, +1],   //  (southwest)
-            "7": [-1, 0],    //  (northwest)
+ static rotatePositions(positions: {[key: string]: [number, number]}, startDir: FlowerDirection, counterClockwise: boolean): {[key: string]: [number, number]} {
+   const rotated: {[key: string]: [number, number]} = {"1": [0, 0]};
 
-            // Outer ring (clockwise from northwest-north)
-            "8": [-1, -1],   //  (northwest-north)
-            "9": [0, -2],    //  (north)
-            "10": [+1, -1],  //  (northeast-north)
-            "11": [+2, -1],  //  (northeast)
-            "12": [+2, 0],   //  (east)
-            "13": [+2, +1],  //  (southeast)
-            "14": [+1, +2],  //  (south-southeast)
-            "15": [0, +2],   //  (south)
-            "16": [-1, +2],  //  (south-southwest)
-            "17": [-2, +1],  //  (southwest)
-            "18": [-2, 0],   //  (west)
-            "19": [-2, -1]   //  (northwest)
-        };
-    }
+   const order = counterClockwise ?
+     ["2","7","6","5","4","3"] :
+     ["2","3","4","5","6","7"];
 
-    static calculateHexFlower(letter: string, centerCoord: string): HexMapping[] {
-        const [centerX, centerY] = centerCoord.match(/\d{2}/g).map(Number);
-        const positions = this.getRelativePositions();
-        const mappings: HexMapping[] = [];
+   // Rotate array based on start direction
+   const offset = startDir - 1;
+   const rotatedOrder = [...order];
+   for (let i = 0; i < offset; i++) {
+     rotatedOrder.unshift(rotatedOrder.pop()!);
+   }
 
-        for (const [num, [dx, dy]] of Object.entries(positions)) {
-            const newX = centerX + dx;
-            const newY = centerY + dy;
-            // Ensure coordinates are always 2 digits
-            const coord = `${String(newX).padStart(2, '0')}${String(newY).padStart(2, '0')}`;
+   rotatedOrder.forEach((newPos, index) => {
+     const originalPos = (index + 2).toString();
+     rotated[newPos] = positions[originalPos];
+   });
 
-            mappings.push({
-                displayValue: `${letter}${num}`,
-                coordinate: coord
-            });
-        }
+   // Copy outer ring unchanged
+   for (let i = 8; i <= 19; i++) {
+     rotated[i.toString()] = positions[i.toString()];
+   }
 
-        return mappings;
-    }
+   return rotated;
+ }
+
+ static calculateHexFlower(
+   letter: string,
+   centerCoord: string,
+   counterClockwise: boolean = false,
+   startDir: FlowerDirection
+ ): HexMapping[] {
+   if (!centerCoord?.match(/\d{4}/)) return [];
+
+   const [centerX, centerY] = centerCoord.match(/\d{2}/g)!.map(Number);
+   const positions = this.rotatePositions(this.basePositions, startDir, counterClockwise);
+
+   return Object.entries(positions).map(([num, [dx, dy]]) => ({
+     displayValue: `${letter}${num}`,
+     coordinate: `${String(centerX + dx).padStart(2, '0')}${String(centerY + dy).padStart(2, '0')}`
+   }));
+ }
 }

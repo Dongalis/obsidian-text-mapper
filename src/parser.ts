@@ -23,7 +23,7 @@ import {
 import { Point, Orientation } from "./orientation";
 import { Region } from "./region";
 import { Spline } from "./spline";
-import { HexFlowerCalculator } from './HexFlowerCalculator';
+import { FlowerDirection, HexFlowerCalculator } from './HexFlowerCalculator';
 
 
 
@@ -56,6 +56,8 @@ export class TextMapperParser {
       "coordinates-format": "{X}{Y}",
       "swap-even-odd": false,
       global: false,
+      "counterclockwise": false,
+      "flower-start": FlowerDirection.North,
       pathFrequency: 1,
       pathDepth: 0.1,
       pathRate: 0.1
@@ -91,6 +93,7 @@ export class TextMapperParser {
   process(lines: string[]) {
     Region.initialize();
     this.pathId = 0;
+    const hexflowers: {letter: string, center: string}[] = [];
 
     // First, set all options.
     for (const line of lines) {
@@ -99,9 +102,20 @@ export class TextMapperParser {
       }
       if (OPTION_REGEX.test(line)) {
         const match = line.match(OPTION_REGEX);
-        this.parseOption(match[1]);
+        const option = this.parseOption(match[1]);
+        if (option.key === "hexflower") {
+          hexflowers.push({
+            letter: option.letter,
+            center: option.center
+          });
+        }
       }
     }
+
+    // Now process hexflowers with final options
+    hexflowers.forEach(({letter, center}) => {
+      Region.addHexFlower(letter, center, this.options);
+    });
 
     if (this.options.horizontal) {
       this.orientation = new Orientation(
@@ -328,64 +342,111 @@ export class TextMapperParser {
    * The key would be "NAME".
    */
   parseOption(optionStr: string): any {
-    const option: any = {
-      valid: false,
-      key: "",
-      value: "",
-    };
-
-    // Tokenize the option and set the key
     const tokens = optionStr.split(" ");
     if (tokens.length < 1) {
-      return option;
+        return { valid: false };
     }
-    option.key = tokens[0];
 
-    // Validate the option
-    if (option.key === "hexflower") {
+    console.log("Parsing option:", {
+    optionStr,
+    tokens
+    });
+
+    const option: any = {
+        valid: false,
+        key: tokens[0],
+        value: ""
+    };
+
+    switch (option.key) {
+      case "flower-start": {
+        const dirMap: {[key: string]: FlowerDirection} = {
+          "north": FlowerDirection.North,
+          "northeast": FlowerDirection.Northeast,
+          "southeast": FlowerDirection.Southeast,
+          "south": FlowerDirection.South,
+          "southwest": FlowerDirection.Southwest,
+          "northwest": FlowerDirection.Northwest,
+          "1": FlowerDirection.North,
+          "2": FlowerDirection.Northeast,
+          "3": FlowerDirection.Southeast,
+          "4": FlowerDirection.South,
+          "5": FlowerDirection.Southwest,
+          "6": FlowerDirection.Northwest
+        };
+        const direction = tokens[1].toLowerCase();
+        console.log("Processing flower-start:", {
+          direction,
+          mappedValue: dirMap[direction]
+        });
         option.valid = true;
-        const letter = tokens[1];
-        const center = tokens[2].split(":")[1];
-        Region.addHexFlower(letter, center);
-    }
-    else if (option.key === "map") {
+        option.value = dirMap[direction];
+        this.options["flower-start"] = option.value;
+        break;
+      }
+      case "counterclockwise": {
+        option.valid = true;
+        option.value = true;
+        this.options["counterclockwise"] = option.value; // Changed to use option.value
+        break;
+      }
+      case "hexflower": {
+        option.valid = true;
+        option.letter = tokens[1];
+        const centerPart = tokens[2]?.split(":");
+        if (!centerPart || centerPart.length < 2) {
+          console.error("Invalid hexflower center format:", tokens[2]);
+          return option;
+        }
+        option.center = centerPart[1];
+        console.log("Hexflower parsed:", {
+          letter: option.letter,
+          center: option.center
+        });
+        break;
+      }
+
+      case "map": {
         option.valid = true;
         const mappingString = tokens.slice(1).join(" ");
         const mappings = mappingString.split(",");
         for (const mapping of mappings) {
-            const [display, coord] = mapping.trim().split("=");
-            Region.addMapping(display.trim(), coord.trim());
+          const [display, coord] = mapping.trim().split("=");
+          Region.addMapping(display.trim(), coord.trim());
         }
-    }
-
-    if (option.key === "horizontal" || option.key === "swap-even-odd") {
-      option.valid = true;
-      option.value = true;
-    } else if (option.key === "coordinates-format") {
-      option.valid = true;
-      option.value = tokens.slice(1).join(" ");
-    } else if (option.key === "global") {
-      option.valid = true;
-      option.value = true;
-    }
-
-    // Add handling for global path options:
-    if (option.key === "pathFrequency" || option.key === "pathDepth" || option.key === "pathRate") {
-      option.valid = true;
-      option.value = parseFloat(tokens[1]);
-    }
-
-    // Add option to remove underline from links
-    if (option.key === "no-underline") {
+        break;
+      }
+      case "horizontal":
+      case "swap-even-odd":
+      case "no-underline": {
         option.valid = true;
         option.value = true;
+        break;
+      }
+      case "coordinates-format": {
+        option.valid = true;
+        option.value = tokens.slice(1).join(" ");
+        break;
+      }
+      case "global": {
+        option.valid = true;
+        option.value = true;
+        break;
+      }
+      case "pathFrequency":
+      case "pathDepth":
+      case "pathRate": {
+        option.valid = true;
+        option.value = parseFloat(tokens[1]);
+        break;
+      }
     }
 
-    // If the option is valid, then set it in this.options. It can now be
-    // used throughout the rendering code.
     if (option.valid) {
       this.options[option.key] = option.value;
+      console.log("Updated options:", this.options);
     }
+    return option;
   }
 
   shape(svgEl: SVGElement, attributes: any) {

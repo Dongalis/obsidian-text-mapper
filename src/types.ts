@@ -31,6 +31,11 @@ export interface HexFlower {
     mappings: HexMapping[];
 }
 
+export interface HexFlowerOptions {
+   counterclockwise: boolean;
+   flowerStart: FlowerDirection;
+}
+
 // Example of how a tile set would be defined
 export const EXAMPLE_TILESET: TileSet = {
     name: "Example Fantasy",

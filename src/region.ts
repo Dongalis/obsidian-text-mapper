@@ -2,8 +2,7 @@ import { App } from "obsidian";
 import { SVGElement } from "./constants";
 import { Point, Orientation } from "./orientation";
 import { NamespaceFunction } from "./constants";
-import { HexFlowerCalculator } from './HexFlowerCalculator';
-
+import { FlowerDirection, HexFlowerCalculator } from './HexFlowerCalculator';
 
 export class Region {
   x: number;
@@ -33,8 +32,20 @@ export class Region {
     this.hexMappings.clear();
   }
 
-  static addHexFlower(letter: string, centerCoord: string) {
-    const mappings = HexFlowerCalculator.calculateHexFlower(letter, centerCoord);
+  static addHexFlower(letter: string, centerCoord: string, options: any): void {
+    const startDir: FlowerDirection = Number(options["flower-start"]);
+       console.log("addHexFlower options:", {
+        letter,
+        centerCoord,
+        counterclockwise: options.counterclockwise,
+        startDir: options["flower-start"]
+    });
+    const mappings = HexFlowerCalculator.calculateHexFlower(
+      letter,
+      centerCoord,
+      options.counterclockwise || false,
+      startDir
+     );
     for (const mapping of mappings) {
       this.hexMappings.set(mapping.coordinate, mapping.displayValue);
     }
