@@ -32,8 +32,10 @@ export interface HexFlower {
 }
 
 export interface HexFlowerOptions {
-   counterclockwise: boolean;
-   flowerStart: FlowerDirection;
+  counterclockwise: boolean;
+  flowerStart: FlowerDirection;
+  subhexRelabel: boolean;
+
 }
 
 // Example of how a tile set would be defined

@@ -406,6 +406,13 @@ export class TextMapperParser {
         break;
       }
 
+      case "subhex-relabel": {
+        option.valid = true;
+        option.value = true;
+        this.options["subhex-relabel"] = true;
+        break;
+      }
+
       case "map": {
         option.valid = true;
         const mappingString = tokens.slice(1).join(" ");

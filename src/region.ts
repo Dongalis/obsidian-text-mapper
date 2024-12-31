@@ -34,18 +34,21 @@ export class Region {
 
   static addHexFlower(letter: string, centerCoord: string, options: any): void {
     const startDir: FlowerDirection = Number(options["flower-start"]);
-       console.log("addHexFlower options:", {
-        letter,
-        centerCoord,
-        counterclockwise: options.counterclockwise,
-        startDir: options["flower-start"]
+    console.log("addHexFlower options:", {
+      letter,
+      centerCoord,
+      counterclockwise: options.counterclockwise,
+      startDir: options["flower-start"],
+      subhexRelabel: options["subhex-relabel"]
+
     });
     const mappings = HexFlowerCalculator.calculateHexFlower(
       letter,
       centerCoord,
       options.counterclockwise || false,
-      startDir
-     );
+      startDir,
+      options["subhex-relabel"] // Add this parameter
+    );
     for (const mapping of mappings) {
       this.hexMappings.set(mapping.coordinate, mapping.displayValue);
     }
