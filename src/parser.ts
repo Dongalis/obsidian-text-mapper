@@ -359,53 +359,32 @@ export class TextMapperParser {
     };
 
     switch (option.key) {
-    case "flower-start": {
+      case "flower-start": {
         const dirMap: {[key: string]: FlowerDirection} = {
-            "north": FlowerDirection.North,           // 1
-            "northeast": FlowerDirection.Northeast,   // 2
-            "southeast": FlowerDirection.Southeast,   // 3
-            "south": FlowerDirection.South,          // 4
-            "southwest": FlowerDirection.Southwest,   // 5
-            "northwest": FlowerDirection.Northwest,   // 6
-            "1": FlowerDirection.North,
-            "2": FlowerDirection.Northeast,
-            "3": FlowerDirection.Southeast,
-            "4": FlowerDirection.South,
-            "5": FlowerDirection.Southwest,
-            "6": FlowerDirection.Northwest
+          "north": FlowerDirection.North,           // 1
+          "northeast": FlowerDirection.Northeast,   // 2
+          "southeast": FlowerDirection.Southeast,   // 3
+          "south": FlowerDirection.South,          // 4
+          "southwest": FlowerDirection.Southwest,   // 5
+          "northwest": FlowerDirection.Northwest,   // 6
+          "1": FlowerDirection.North,
+          "2": FlowerDirection.Northeast,
+          "3": FlowerDirection.Southeast,
+          "4": FlowerDirection.South,
+          "5": FlowerDirection.Southwest,
+          "6": FlowerDirection.Northwest
         };
         const direction = tokens[1].toLowerCase();
+        console.log("Processing flower-start:", {
+          direction,
+          mappedValue: dirMap[direction]
+        });
         option.valid = true;
         option.value = dirMap[direction];
         this.options["flower-start"] = option.value;
         break;
-    }
+      }
 
-      // case "flower-start": {
-      //   const dirMap: {[key: string]: FlowerDirection} = {
-      //     "north": FlowerDirection.North,
-      //     "northeast": FlowerDirection.Northeast,
-      //     "southeast": FlowerDirection.Southeast,
-      //     "south": FlowerDirection.South,
-      //     "southwest": FlowerDirection.Southwest,
-      //     "northwest": FlowerDirection.Northwest,
-      //     "1": FlowerDirection.North,
-      //     "2": FlowerDirection.Northeast,
-      //     "3": FlowerDirection.Southeast,
-      //     "4": FlowerDirection.South,
-      //     "5": FlowerDirection.Southwest,
-      //     "6": FlowerDirection.Northwest
-      //   };
-      //   const direction = tokens[1].toLowerCase();
-      //   console.log("Processing flower-start:", {
-      //     direction,
-      //     mappedValue: dirMap[direction]
-      //   });
-      //   option.valid = true;
-      //   option.value = dirMap[direction];
-      //   this.options["flower-start"] = option.value;
-      //   break;
-      // }
       case "counterclockwise": {
         option.valid = true;
         option.value = true;
