@@ -109,6 +109,14 @@ export class HexFlowerCalculator {
     // First rotate to get AB in the right position
     const baseOuterSequence = ["9", "11", "13", "15", "17", "19"];
 
+    const outerHexNumberMap = {
+      "10": "9",    // Position 10 → '9'
+      "12": "10",   // Position 12 → '10'
+      "14": "11",   // Position 14 → '11'
+      "16": "12",   // Position 16 → '12'
+      "18": "13",   // Position 18 → '13'
+    };
+
     let ringPositions = [...baseOuterSequence];
     if (counterclockwise) {
       ringPositions.reverse();
@@ -118,7 +126,7 @@ export class HexFlowerCalculator {
       ringPositions.unshift(ringPositions.pop()!);
       ringPositions.unshift(ringPositions.pop()!);
     }
-    
+
     return Object.entries(positions).map(([num, [dx, dy]]) => {
       let displayValue;
 
@@ -130,7 +138,8 @@ export class HexFlowerCalculator {
         } else if (num === "1") {
           displayValue = `${letter}1`;
         } else {
-          displayValue = `${letter}${num}`;
+          const mappedNum = outerHexNumberMap[num] || num;
+          displayValue = `${letter}${mappedNum}`;
         }
       } else {
         displayValue = `${letter}${num}`;
@@ -142,5 +151,6 @@ export class HexFlowerCalculator {
       };
     });
   }
+
 
 }
