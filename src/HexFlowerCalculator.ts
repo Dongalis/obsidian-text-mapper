@@ -74,14 +74,14 @@ export class HexFlowerCalculator {
       'I': ['North', 'NE', 'J', 'B', 'H', 'NW'],
       'J': ['North', 'NE', 'K', 'C', 'B', 'I'],
       'K': ['North', 'NE', 'L', 'C', 'J', 'NE'],
-      'L': ['NE', 'East', 'M', 'D', 'C', 'K'],
-      'M': ['East', 'SE', 'N', 'D', 'L', 'East'],
-      'N': ['SE', 'South', 'O', 'E', 'D', 'M'],
-      'O': ['South', 'SW', 'P', 'E', 'N', 'South'],
-      'P': ['SW', 'West', 'Q', 'F', 'E', 'O'],
-      'Q': ['West', 'NW', 'R', 'F', 'P', 'West'],
-      'R': ['NW', 'North', 'S', 'G', 'F', 'Q'],
-      'S': ['North', 'NW', 'H', 'G', 'R', 'North']
+      'L': ['K', 'NE', 'SE', 'M', 'D', 'C'],
+      'M': ['L', 'NE', 'SE', 'South', 'N', 'D'],
+      'N': ['D', 'M', 'SE', 'South', 'O', 'E'],
+      'O': ['E', 'N', 'SE', 'South', 'SW', 'P'],
+      'P': ['F', 'E', 'O', 'South', 'SW', 'Q'],
+      'Q': ['R', 'F', 'P', 'South', 'SW', 'NW'],
+      'R': ['S', 'G', 'F', 'Q' 'SW', 'NW'],
+      'S': ['North', 'H', 'G', 'R', 'SW', 'NW']
     };
 
     // Get connections for this hex
@@ -90,27 +90,39 @@ export class HexFlowerCalculator {
       return baseLetter + position;
     }
 
-    // Handle counterclockwise rotation if needed
-    if (counterclockwise) {
-      neighbors = [...neighbors].reverse();
-    }
+// Reverse neighbors for counterclockwise rotation
+if (counterclockwise) {
+    neighbors = [...neighbors].reverse();
+    console.log("Neighbors reversed for counterclockwise rotation:", neighbors);
+}
 
-    // Calculate how much to rotate based on chosen cardinal direction
-    const shift = (startDir - 1) % 6;
-    if (shift > 0) {
-      // Map showing how cardinal directions change with each rotation step
-      const cardinalRotation = {
-        'North': ['NE', 'East', 'SE', 'South', 'SW', 'West', 'NW', 'North'],
-        'NE': ['East', 'SE', 'South', 'SW', 'West', 'NW', 'North', 'NE'],
-        'East': ['SE', 'South', 'SW', 'West', 'NW', 'North', 'NE', 'East'],
-        'SE': ['South', 'SW', 'West', 'NW', 'North', 'NE', 'East', 'SE'],
-        'South': ['SW', 'West', 'NW', 'North', 'NE', 'East', 'SE', 'South'],
-        'SW': ['West', 'NW', 'North', 'NE', 'East', 'SE', 'South', 'SW'],
-        'West': ['NW', 'North', 'NE', 'East', 'SE', 'South', 'SW', 'West'],
-        'NW': ['North', 'NE', 'East', 'SE', 'South', 'SW', 'West', 'NW']
-      };
-    }
+        // Calculate rotation amount
+const shift = (startDir - 1) % 6;
+console.log(`Shift value: ${shift}, Counterclockwise: ${counterclockwise}`);
 
+// Always apply relabeling if shift > 0 or rotation direction changes
+if (shift > 0 || counterclockwise) {
+    console.log(`Starting neighbor relabeling... Shift value: ${shift}, Rotation direction: ${counterclockwise ? "Counterclockwise" : "Clockwise"}`);
+
+    const directionSequence = counterclockwise
+        ? ['North', 'NW', 'SW', 'South', 'SE', 'NE']
+        : ['North', 'NE', 'SE', 'South', 'SW', 'NW'];
+
+    neighbors = neighbors.map((n) => {
+        console.log(`Processing neighbor: ${n}`);
+        if (/^(North|South|NE|SE|SW|NW)$/.test(n)) {
+            console.log(`Matched cardinal direction: ${n}`);
+            const currentIndex = directionSequence.indexOf(n);
+            if (currentIndex >= 0) {
+                const newIndex = (currentIndex + shift) % 8;
+                const newDirection = directionSequence[newIndex];
+                console.log(`Relabeling direction: ${n} -> ${newDirection}`);
+                return newDirection;
+            }
+        }
+        return n; // No transformation needed
+    });
+}
     return baseLetter + neighbors[position];
   }
 
