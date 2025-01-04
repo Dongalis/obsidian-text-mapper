@@ -30,7 +30,7 @@ Create a map by inserting a text-mapper code block into an obsidian file:
 - `option no-underline`: Remove underline from links in hexes
 - `option hexflower A center:1010`: map tile numbers to a letter format in a hexflower spiral centered on a specific tile 
 - `option counterclockwise`: arrange the hexflower pattern counterclockwise
-- `option flower-start northwest` allows the flower to spiral out from any point (12'oclock is due north)
+- `option flower-start northwest`: allows the flower to spiral out from any point, e.g. 'northwest' (12'oclock is due north)
 - `option subhex-relabel`: relabels all border hexes automatically based on cardinal and rotation direction
 - `option map AG=1008`: map a specific hexnumber to a different name 
 
