@@ -53,129 +53,115 @@ export class HexFlowerCalculator {
     return this.SEQUENCE[wrappedIndex >= 0 ? wrappedIndex : wrappedIndex + this.SEQUENCE.length];
   }
 
-  // Determines how hexes connect to their neighbors, including cardinal directions
-  // for edge hexes. Each array represents connections in clockwise order from north.
+  // Define the base adjacency map showing how hexes connect in clockwise order
+  private static readonly adjacencyMap = {
+    // Inner hexes only connect to other letters since they're not on the border
+    'A': ['B', 'C', 'D', 'E', 'F', 'G'],
+    'B': ['I', 'J', 'C', 'A', 'G', 'H'],
+    'C': ['J', 'K', 'L', 'D', 'A', 'B'],
+    'D': ['C', 'L', 'M', 'N', 'E', 'A'],
+    'E': ['A', 'D', 'N', 'O', 'P', 'F'],
+    'F': ['G', 'A', 'E', 'P', 'Q', 'R'],
+    'G': ['H', 'B', 'A', 'F', 'R', 'S'],
+    // Edge hexes include cardinal directions where they border empty space
+    'H': ['North', 'I', 'B', 'G', 'S', 'NW'],
+    'I': ['North', 'NE', 'J', 'B', 'H', 'NW'],
+    'J': ['North', 'NE', 'K', 'C', 'B', 'I'],
+    'K': ['North', 'NE', 'SE', 'L', 'C', 'J'],
+    'L': ['K', 'NE', 'SE', 'M', 'D', 'C'],
+    'M': ['L', 'NE', 'SE', 'South', 'N', 'D'],
+    'N': ['D', 'M', 'SE', 'South', 'O', 'E'],
+    'O': ['E', 'N', 'SE', 'South', 'SW', 'P'],
+    'P': ['F', 'E', 'O', 'South', 'SW', 'Q'],
+    'Q': ['R', 'F', 'P', 'South', 'SW', 'NW'],
+    'R': ['S', 'G', 'F', 'Q', 'SW', 'NW'],
+    'S': ['North', 'H', 'G', 'R', 'SW', 'NW']
+  };
+
+  // Each mapping shows how cardinal directions transform when we rotate the
+  // flower clockwise to bring the chosen start direction to the top (North)
+  // position Determines how hexes connect to their neighbors, including
+  // cardinal directions for edge hexes. Each array represents connections in
+  // clockwise order from north
+
   static getConnectedLetter(baseLetter: string, position: number, counterclockwise: boolean, startDir: FlowerDirection): string {
-    // Define the base adjacency map showing how hexes connect in clockwise order
-    const adjacencyMap = {
-      // Inner hexes only connect to other letters since they're not on the border
-      'A': ['B', 'C', 'D', 'E', 'F', 'G'],
-      'B': ['I', 'J', 'C', 'A', 'G', 'H'],
-      'C': ['J', 'K', 'L', 'D', 'A', 'B'],
-      'D': ['C', 'L', 'M', 'N', 'E', 'A'],
-      'E': ['A', 'D', 'N', 'O', 'P', 'F'],
-      'F': ['G', 'A', 'E', 'P', 'Q', 'R'],
-      'G': ['H', 'B', 'A', 'F', 'R', 'S'],
-
-      // Edge hexes include cardinal directions where they border empty space
-      'H': ['North', 'I', 'B', 'G', 'S', 'NW'],
-      'I': ['North', 'NE', 'J', 'B', 'H', 'NW'],
-      'J': ['North', 'NE', 'K', 'C', 'B', 'I'],
-      'K': ['North', 'NE', 'SE', 'L', 'C', 'J'],
-      'L': ['K', 'NE', 'SE', 'M', 'D', 'C'],
-      'M': ['L', 'NE', 'SE', 'South', 'N', 'D'],
-      'N': ['D', 'M', 'SE', 'South', 'O', 'E'],
-      'O': ['E', 'N', 'SE', 'South', 'SW', 'P'],
-      'P': ['F', 'E', 'O', 'South', 'SW', 'Q'],
-      'Q': ['R', 'F', 'P', 'South', 'SW', 'NW'],
-      'R': ['S', 'G', 'F', 'Q', 'SW', 'NW'],
-      'S': ['North', 'H', 'G', 'R', 'SW', 'NW']
-    };
-
-    // Define how cardinal directions should transform for each edge hex when going counterclockwise
-    const positionBasedTransform = {
-      // Northern edge hexes
-      'H': {
-        'North': 'North',  // North face stays north
-        'NW': 'NE'
-      },
-      'I': {
-        'North': 'North',  // North face stays north
-        'NE': 'NW',       // Northeast becomes northwest
-        'NW': 'NE'
-        },
-      'J': {
-        'North': 'North',  // North face stays north
-        'NE': 'NW',        // Northeast becomes northwest
-        'NW': 'NE'
-      },
-      'K': {
-        'North': 'North',  // North face stays north
-        'NE': 'NW',
-        'SE': 'SW'
-      },
-
-      // Eastern edge hexes
-      'L': {
-        'NE': 'NW',
-        'SE': 'SW'        // Southeast becomes northeast
-      },
-      'M': {
-        'NE': 'NW',       // Northeast becomes northwest
-        'SE': 'SW',       // Southeast becomes southwest
-        'South': 'South'   // South stays south
-      },
-      'N': {
-        'SE': 'SW',       // Southeast becomes southwest
-        'South': 'South'   // South stays south
-      },
-
-      // Southern edge hexes
-      'O': {
-        'SE': 'SW',       // Southeast becomes southwest
-        'South': 'South',  // South face stays south
-        'SW': 'SE'        // Southwest stays southwest
-      },
-      'P': {
-        'South': 'South',  // South face stays south
-        'SW': 'SE'        // Southwest stays southwest
-      },
-      'Q': {
-        'South': 'South',  // South face stays south
-        'SW': 'SE',       // Southwest stays southwest
-        'NW': 'NE'        // Northwest becomes southwest
-      },
-
-      // Western edge hexes
-      'R': {
-        'SW': 'SE',
-        'NW': 'NE'
-      },
-      'S': {
-        'North': 'North',
-        'SW': 'SE',       // Southwest stays southwest
-        'NW': 'NE'        // Northwest stays northwest
-      }
-    };
-
-    let neighbors = adjacencyMap[baseLetter];
+    // Get the base connections for this hex from our adjacency map
+    let neighbors = this.adjacencyMap[baseLetter];
     if (!neighbors) {
         return baseLetter + position;
     }
 
-    if (counterclockwise) {
-        // First reverse the array
-        neighbors = [...neighbors].reverse();
-        console.log(`Reversing neighbors for hex ${baseLetter}:`, neighbors);
-
-        // Apply the hex-specific transformations
-        const hexTransforms = positionBasedTransform[baseLetter] || {};
-        neighbors = neighbors.map(n => {
-            const transformed = hexTransforms[n] || n;
-            console.log(`Hex ${baseLetter}: Transforming '${n}' to '${transformed}'`);
-            return transformed;
-        });
-    }
-
-    const shift = (startDir - 1) % 6;
-    if (shift > 0) {
-        for (let i = 0; i < shift; i++) {
-            neighbors.unshift(neighbors.pop()!);
-          
+    // Define both clockwise and counterclockwise transformation maps
+    const cardinalTransforms = {
+        [FlowerDirection.North]: {
+            'North': 'North', 'NE': 'NE', 'SE': 'SE',
+            'South': 'South', 'SW': 'SW', 'NW': 'NW'
+        },
+        [FlowerDirection.Northwest]: {
+            'North': 'NW', 'NE': 'North', 'SE': 'NE',
+            'South': 'SE', 'SW': 'South', 'NW': 'SW'
+        },
+        [FlowerDirection.West]: {
+            'North': 'SW', 'NE': 'NW', 'SE': 'North',
+            'South': 'NE', 'SW': 'SE', 'NW': 'South'
+        },
+        [FlowerDirection.Southwest]: {
+            'North': 'South', 'NE': 'SW', 'SE': 'NW',
+            'South': 'North', 'SW': 'NE', 'NW': 'SE'
+        },
+        [FlowerDirection.Southeast]: {
+            'North': 'SE', 'NE': 'South', 'SE': 'SW',
+            'South': 'NW', 'SW': 'North', 'NW': 'NE'
+        },
+        [FlowerDirection.Northeast]: {
+            'North': 'NE', 'NE': 'SE', 'SE': 'South',
+            'South': 'SW', 'SW': 'NW', 'NW': 'North'
         }
+    };
+
+    const cardinalTransformsCounterclockwise = {
+        [FlowerDirection.North]: {
+            'North': 'North', 'NE': 'NE', 'SE': 'SE',
+            'South': 'South', 'SW': 'SW', 'NW': 'NW'
+        },
+        [FlowerDirection.Northwest]: {
+            'North': 'NW', 'NE': 'SW', 'SE': 'South',
+            'South': 'SW', 'SW': 'NW', 'NW': 'North'
+        },
+        [FlowerDirection.West]: {
+            'North': 'SE', 'NE': 'South', 'SE': 'SW',
+            'South': 'NW', 'SW': 'North', 'NW': 'NE'
+        },
+        [FlowerDirection.Southwest]: {
+            'North': 'South', 'NE': 'SW', 'SE': 'NW',
+            'South': 'North', 'SW': 'NE', 'NW': 'SE'
+        },
+        [FlowerDirection.Southeast]: {
+            'North': 'SW', 'NE': 'NW', 'SE': 'North',
+            'South': 'NE', 'SW': 'SE', 'NW': 'South'
+        },
+        [FlowerDirection.Northeast]: {
+            'North': 'NE', 'NE': 'SE', 'SE': 'South',
+            'South': 'SW', 'SW': 'South', 'NW': 'North'
+        }
+    };
+
+    // Choose the appropriate transformation map based on traversal direction
+    const transforms = counterclockwise ?
+        cardinalTransformsCounterclockwise[startDir] :
+        cardinalTransforms[startDir];
+
+    // First transform the cardinal directions according to our rotation
+    let transformed = neighbors.map(direction => {
+        return transforms[direction] || direction;  // Use transform if it's a cardinal direction, otherwise keep original
+    });
+
+    // Then handle traversal direction by reversing if going counterclockwise
+    if (counterclockwise) {
+        transformed = transformed.reverse();
     }
 
-    return baseLetter + neighbors[position];
+    return baseLetter + transformed[position];
 }
 
   // Handles the physical rotation of hex positions based on chosen cardinal direction
@@ -259,6 +245,7 @@ export class HexFlowerCalculator {
       // Rotate positions to maintain proper connections
       ringPositions.push(ringPositions.shift()!);
       ringPositions.unshift(ringPositions.pop()!);
+
     }
 
     // Generate final hex mappings with proper labels and coordinates
