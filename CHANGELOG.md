@@ -1,3 +1,10 @@
+## Changes in 1.6.5
+
+### New Features
+Fixes to edge hex cardinal labeling
+### Notes
+- Minimum Obsidian version: 0.12.0
+- Please report any issues on the GitHub repository 
 ## Changes in 1.6.4
 
 ### New Features
