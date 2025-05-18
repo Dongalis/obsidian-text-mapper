@@ -12,6 +12,8 @@ import { GNOMEYLAND_TILESET } from './tilesets/gnomeyland';
 import { APOCALYPSE_TILESET } from './tilesets/apocalypse';
 import { SPACE_TILESET } from './tilesets/space';
 
+import { DataviewApi } from "obsidian-dataview";
+
 // TextMapper class definition
 export class TextMapper extends MarkdownRenderChild {
     textMapperEl: HTMLDivElement;
@@ -116,6 +118,11 @@ export default class TextMapperPlugin extends Plugin {
       this.processMarkdown.bind(this)
     );
 
+    // Register Dataview processor
+    this.registerMarkdownCodeBlockProcessor(
+      "text-mapper-dv",
+      this.processDataviewMarkdown.bind(this)
+    );
     // Add event listener for settings changes
     this.registerEvent(
       this.app.workspace.on('text-mapper:settings-changed', async () => {
@@ -267,6 +274,49 @@ export default class TextMapperPlugin extends Plugin {
             ctx.addChild(new ParseError(el));
         }
     }
+
+
+  async processDataviewMarkdown(
+      source: string,
+      el: HTMLElement,
+      ctx: MarkdownPostProcessorContext
+  ): Promise<any> {
+    const dataviewPlugin = this.app.plugins.plugins["dataview"];
+    if (!dataviewPlugin || !dataviewPlugin.api) {
+      el.createEl("pre", { text: "Dataview plugin not loaded." });
+      return;
+    }
+
+    const dvApi: DataviewApi = dataviewPlugin.api;
+
+    try {
+      //const fn = new Function("dv", `return ${source}`);
+      let result;
+      try {
+        const fn = new Function("dv", `"use strict"; return (async () => { ${source} })();`);
+        result = await fn(dvApi);
+      } catch (e) {
+        el.createEl("pre", { text: `Dataview evaluation error:\n${e.message}` });
+        console.error("Dataview evaluation error:", e);
+        return;
+      }
+
+      const output = result instanceof Promise ? await result : result;
+
+      if (!Array.isArray(output)) {
+        el.createEl("pre", { text: "Expected array output from Dataview expression." });
+        return;
+      }
+
+      const dataviewLines = output.join("\n");
+      // Reuse processMarkdown to process output
+      this.processMarkdown(dataviewLines, el, ctx);
+
+    } catch (e) {
+      console.error("Dataview execution error", e);
+      ctx.addChild(new ParseError(el));
+    }
+  }
 
 
   async loadSettings() {

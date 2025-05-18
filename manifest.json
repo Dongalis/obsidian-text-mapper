@@ -6,5 +6,8 @@
   "description": "Render hex maps in Obsidian",
   "author": "Colin McLear",
   "authorUrl": "https://github.com/LichFactory-Games",
-  "isDesktopOnly": false
+  "isDesktopOnly": false,
+  "dependencies": {
+    "dataview": ">=0.5.0"
+  }
 }
